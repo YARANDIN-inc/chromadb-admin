@@ -1,0 +1,42 @@
+/* Custom styles for ChromaDB Admin Panel */
+
+.logo {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+}
+
+.metadata-badge {
+    font-size: 0.7em;
+    margin: 1px;
+}
+
+.query-highlight {
+    background-color: #fff3cd;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+    .card {
+        background-color: #2d3748;
+        color: #e2e8f0;
+    }
+
+    .main-content {
+        background-color: #1a202c;
+    }
+}

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}{{ collection.name }} - ChromaDB Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2"><i class="bi bi-collection"></i> {{ collection.name }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/collections">Collections</a></li>
+                <li class="breadcrumb-item active">{{ collection.name }}</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="btn-toolbar">
+        <a href="/add-documents/{{ collection.name }}" class="btn btn-primary btn-custom me-2">
+            <i class="bi bi-file-plus"></i> Add Documents
+        </a>
+        <a href="/query?collection={{ collection.name }}" class="btn btn-outline-success btn-custom">
+            <i class="bi bi-search"></i> Query
+        </a>
+    </div>
+</div>
+
+<!-- Collection Info -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ collection.count }}</h4>
+                        <p class="card-text">Documents</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-file-text fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ collection.metadata|length }}</h4>
+                        <p class="card-text">Metadata Fields</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-tags fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">Active</h4>
+                        <p class="card-text">Status</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-check-circle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Collection Metadata -->
+{% if collection.metadata %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-tags"></i> Collection Metadata</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for key, value in collection.metadata.items() %}
+                    <div class="col-md-6 mb-2">
+                        <strong>{{ key }}:</strong> 
+                        <span class="badge bg-light text-dark">{{ value }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Documents -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-file-text"></i> Documents</h5>
+                <small class="text-muted">Showing first 50 documents</small>
+            </div>
+            <div class="card-body">
+                {% if collection_data and collection_data.ids %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Document</th>
+                                <th>Metadata</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in range(collection_data.ids[0]|length) %}
+                            <tr>
+                                <td>
+                                    <code class="small">{{ collection_data.ids[0][i] }}</code>
+                                </td>
+                                <td>
+                                    <div class="document-text" style="max-width: 400px; overflow: hidden;">
+                                        {% if collection_data.documents and collection_data.documents[0] and i < collection_data.documents[0]|length %}
+                                            {{ collection_data.documents[0][i][:200] }}
+                                            {% if collection_data.documents[0][i]|length > 200 %}...{% endif %}
+                                        {% else %}
+                                            <em class="text-muted">No document text</em>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if collection_data.metadatas and collection_data.metadatas[0] and i < collection_data.metadatas[0]|length and collection_data.metadatas[0][i] %}
+                                        {% for key, value in collection_data.metadatas[0][i].items() %}
+                                            <small class="badge bg-secondary me-1">{{ key }}: {{ value }}</small>
+                                        {% endfor %}
+                                    {% else %}
+                                        <em class="text-muted">No metadata</em>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-file-text fs-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">No Documents Found</h4>
+                    <p class="text-muted">This collection doesn't contain any documents yet.</p>
+                    <a href="/add-documents/{{ collection.name }}" class="btn btn-primary btn-custom">
+                        <i class="bi bi-file-plus"></i> Add Documents
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

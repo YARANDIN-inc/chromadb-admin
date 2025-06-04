@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Add Documents - {{ collection_name }} - ChromaDB Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2"><i class="bi bi-file-plus"></i> Add Documents</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/collections">Collections</a></li>
+                <li class="breadcrumb-item"><a href="/collections/{{ collection_name }}">{{ collection_name }}</a></li>
+                <li class="breadcrumb-item active">Add Documents</li>
+            </ol>
+        </nav>
+    </div>
+    <a href="/collections/{{ collection_name }}" class="btn btn-outline-secondary btn-custom">
+        <i class="bi bi-arrow-left"></i> Back to Collection
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-plus"></i> Add Documents to {{ collection_name }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="/add-documents/{{ collection_name }}">
+                    <div class="mb-4">
+                        <label for="documents" class="form-label">Documents <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="documents" name="documents" rows="8" 
+                                  placeholder="Enter one document per line..." required></textarea>
+                        <div class="form-text">
+                            Enter each document on a separate line. These will be embedded and stored in ChromaDB.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="ids" class="form-label">Document IDs (Optional)</label>
+                        <textarea class="form-control" id="ids" name="ids" rows="4" 
+                                  placeholder="Enter one ID per line (must match number of documents)..."></textarea>
+                        <div class="form-text">
+                            Optional: Provide custom IDs for your documents. If not provided, UUIDs will be generated automatically.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="metadatas" class="form-label">Metadata (Optional)</label>
+                        <textarea class="form-control" id="metadatas" name="metadatas" rows="4" 
+                                  placeholder='{"category": "example", "source": "web"}&#10;{"category": "test", "source": "manual"}'></textarea>
+                        <div class="form-text">
+                            Optional: Provide metadata for each document as JSON objects, one per line.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/collections/{{ collection_name }}" class="btn btn-secondary btn-custom me-md-2">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-custom">
+                            <i class="bi bi-file-plus"></i> Add Documents
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Tips for Adding Documents</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-file-text"></i> Document Format</h6>
+                        <ul class="small text-muted">
+                            <li>One document per line</li>
+                            <li>Plain text works best</li>
+                            <li>Rich content will be processed as text</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-tags"></i> Metadata Format</h6>
+                        <ul class="small text-muted">
+                            <li>JSON format: {"key": "value"}</li>
+                            <li>One JSON object per line</li>
+                            <li>Must match document count if provided</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6><i class="bi bi-lightbulb"></i> Example</h6>
+                    <div class="bg-light p-3 rounded">
+                        <strong>Documents:</strong><br>
+                        <code class="small">
+                            The quick brown fox jumps over the lazy dog.<br>
+                            ChromaDB is a vector database for AI applications.<br>
+                            Machine learning enables computers to learn patterns.
+                        </code>
+                        <br><br>
+                        <strong>Metadata (optional):</strong><br>
+                        <code class="small">
+                            {"category": "animals", "type": "sentence"}<br>
+                            {"category": "technology", "type": "definition"}<br>
+                            {"category": "technology", "type": "explanation"}
+                        </code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Auto-sync number of lines between documents and metadata
+document.getElementById('documents').addEventListener('input', function() {
+    const documentLines = this.value.split('\n').filter(line => line.trim() !== '').length;
+    const idsTextarea = document.getElementById('ids');
+    const metadatasTextarea = document.getElementById('metadatas');
+    
+    // Update placeholders with line counts
+    idsTextarea.placeholder = `Enter one ID per line (${documentLines} documents)...`;
+    metadatasTextarea.placeholder = `Enter one JSON object per line (${documentLines} documents)...`;
+});
+</script>
+{% endblock %}
+{% endblock %} 

@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: chromadb_admin
+      POSTGRES_USER: ${POSTGRES_USER:-chromadb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - chromadb-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chromadb} -d chromadb_admin"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ChromaDB Service
+  chromadb:
+    image: chromadb/chroma:1.0.12
+    environment:
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+      - ANONYMIZED_TELEMETRY=False
+    ports:
+      - "${CHROMADB_PORT:-8001}:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+    networks:
+      - chromadb-network
+    restart: unless-stopped
+
+  # Web Application
+  web:
+    image: europe-west3-docker.pkg.dev/getpin-proj-host/microservices/chromadb-admin:0.1.0
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-chromadb}:${POSTGRES_PASSWORD}@postgres:5432/chromadb_admin
+      - CHROMADB_URL=http://chromadb:8000
+      - CHROMADB_TOKEN=${CHROMADB_TOKEN:-1234567890-change-in-production}
+      - SECRET_KEY=secret
+      
+      # Initial Admin User Configuration
+      - CREATE_INITIAL_ADMIN=true
+      - INITIAL_ADMIN_USERNAME=admin
+      - INITIAL_ADMIN_EMAIL=admin@gmail.com
+      - INITIAL_ADMIN_PASSWORD=pass
+      
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+    networks:
+      - chromadb-network
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers 4
+
+volumes:
+  postgres_data:
+  chromadb_data:
+
+networks:
+  chromadb-network:
+    driver: bridge 

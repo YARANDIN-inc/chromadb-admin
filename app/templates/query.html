@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Query Interface - ChromaDB Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-search"></i> Query Interface</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-search"></i> Search Documents</h5>
+            </div>
+            <div class="card-body">
+                {% if collections %}
+                <form method="post" action="/query/execute">
+                    <div class="mb-3">
+                        <label for="collection_name" class="form-label">Select Collection</label>
+                        <select class="form-select" id="collection_name" name="collection_name" required>
+                            <option value="">Choose a collection...</option>
+                            {% for collection in collections %}
+                            <option value="{{ collection.name }}">
+                                {{ collection.name }} ({{ collection.count }} documents)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="query_text" class="form-label">Search Query</label>
+                        <textarea class="form-control" id="query_text" name="query_text" rows="3" 
+                                  placeholder="Enter your search query here..." required></textarea>
+                        <div class="form-text">
+                            Enter the text you want to search for. ChromaDB will find semantically similar documents.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="n_results" class="form-label">Number of Results</label>
+                        <select class="form-select" id="n_results" name="n_results">
+                            <option value="5">5 results</option>
+                            <option value="10" selected>10 results</option>
+                            <option value="20">20 results</option>
+                            <option value="50">50 results</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg btn-custom">
+                            <i class="bi bi-search"></i> Execute Query
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-collection fs-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">No Collections Available</h4>
+                    <p class="text-muted">You need to create a collection first before you can query documents.</p>
+                    <a href="/collections" class="btn btn-primary btn-custom">
+                        <i class="bi bi-plus"></i> Create Collection
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if collections %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Query Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-lightbulb"></i> Semantic Search</h6>
+                        <p class="small text-muted">
+                            ChromaDB uses embeddings to find semantically similar content, not just exact text matches.
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-target"></i> Better Results</h6>
+                        <p class="small text-muted">
+                            Use natural language queries for better results. Describe what you're looking for conceptually.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
