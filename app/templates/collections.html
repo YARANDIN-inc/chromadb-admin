@@ -5,12 +5,28 @@
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
     <h1 class="h2"><i class="bi bi-collection"></i> Collections</h1>
+    {% if instances %}
     <button type="button" class="btn btn-primary btn-custom" data-bs-toggle="modal" data-bs-target="#createCollectionModal">
         <i class="bi bi-plus"></i> Create Collection
     </button>
+    {% endif %}
 </div>
 
-{% if collections %}
+{% if not instances %}
+<!-- No Instance Access Message -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-exclamation-triangle fs-1 text-warning mb-3"></i>
+                <h4 class="text-warning">No ChromaDB Instance Access</h4>
+                <p class="text-muted">You don't have access to any ChromaDB instances.</p>
+                <p class="text-muted">Please contact your administrator to grant you access to ChromaDB instances.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif collections %}
 <div class="row">
     {% for collection in collections %}
     <div class="col-md-6 col-lg-4 mb-4">
@@ -23,29 +39,37 @@
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/collections/{{ collection.name }}">
+                            <li><a class="dropdown-item" href="/collections/{{ collection.name }}?instance_id={{ collection.instance_id }}">
                                 <i class="bi bi-eye"></i> View Details
                             </a></li>
-                            <li><a class="dropdown-item" href="/add-documents/{{ collection.name }}">
+                            {% if current_user.is_super_admin or current_user.has_instance_permission(collection.instance_id, "add") %}
+                            <li><a class="dropdown-item" href="/add-documents/{{ collection.name }}?instance_id={{ collection.instance_id }}">
                                 <i class="bi bi-file-plus"></i> Add Documents
                             </a></li>
+                            {% endif %}
+                            {% if current_user.is_super_admin or current_user.has_instance_permission(collection.instance_id, "create") %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="post" action="/collections/{{ collection.name }}/delete" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <input type="hidden" name="instance_id" value="{{ collection.instance_id }}">
                                     <button type="submit" class="dropdown-item text-danger" 
                                             onclick="return confirm('Are you sure you want to delete this collection?')">
                                         <i class="bi bi-trash"></i> Delete
                                     </button>
                                 </form>
                             </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
                 
+                <!-- Instance Badge -->
                 <div class="mb-3">
+                    <span class="badge bg-secondary">{{ collection.instance_name }}</span>
                     <span class="badge bg-primary badge-custom">{{ collection.count }} documents</span>
                     {% if collection.metadata %}
-                        <span class="badge bg-secondary badge-custom">{{ collection.metadata|length }} metadata fields</span>
+                        <span class="badge bg-info badge-custom">{{ collection.metadata|length }} metadata fields</span>
                     {% endif %}
                 </div>
                 
@@ -61,7 +85,7 @@
                 {% endif %}
                 
                 <div class="d-grid gap-2">
-                    <a href="/collections/{{ collection.name }}" class="btn btn-outline-primary btn-sm btn-custom">
+                    <a href="/collections/{{ collection.name }}?instance_id={{ collection.instance_id }}" class="btn btn-outline-primary btn-sm btn-custom">
                         <i class="bi bi-eye"></i> View Collection
                     </a>
                 </div>
@@ -78,9 +102,11 @@
                 <i class="bi bi-collection fs-1 text-muted mb-3"></i>
                 <h4 class="text-muted">No Collections Found</h4>
                 <p class="text-muted">Create your first collection to get started with ChromaDB.</p>
+                {% if instances %}
                 <button type="button" class="btn btn-primary btn-custom" data-bs-toggle="modal" data-bs-target="#createCollectionModal">
                     <i class="bi bi-plus"></i> Create First Collection
                 </button>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -88,15 +114,29 @@
 {% endif %}
 
 <!-- Create Collection Modal -->
+{% if instances %}
 <div class="modal fade" id="createCollectionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="post" action="/collections/create">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Create New Collection</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="instanceSelect" class="form-label">ChromaDB Instance</label>
+                        <select class="form-select" id="instanceSelect" name="instance_id" required>
+                            <option value="">Select an instance...</option>
+                            {% for instance in instances %}
+                                {% if current_user.is_super_admin or current_user.has_instance_permission(instance.id, "create") %}
+                                <option value="{{ instance.id }}">{{ instance.name }} - {{ instance.url }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Choose which ChromaDB instance to create the collection in</div>
+                    </div>
                     <div class="mb-3">
                         <label for="collectionName" class="form-label">Collection Name</label>
                         <input type="text" class="form-control" id="collectionName" name="name" required>
@@ -119,4 +159,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %} 

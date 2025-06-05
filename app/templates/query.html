@@ -16,16 +16,21 @@
             <div class="card-body">
                 {% if collections %}
                 <form method="post" action="/query/execute">
+                    <input type="hidden" id="instance_id" name="instance_id" value="">
+                    
                     <div class="mb-3">
                         <label for="collection_name" class="form-label">Select Collection</label>
-                        <select class="form-select" id="collection_name" name="collection_name" required>
+                        <select class="form-select" id="collection_name" name="collection_name" required onchange="updateInstanceId()">
                             <option value="">Choose a collection...</option>
                             {% for collection in collections %}
-                            <option value="{{ collection.name }}">
-                                {{ collection.name }} ({{ collection.count }} documents)
+                            <option value="{{ collection.name }}" data-instance-id="{{ collection.instance_id }}">
+                                {{ collection.name }} ({{ collection.count }} documents) - {{ collection.instance_name }}
                             </option>
                             {% endfor %}
                         </select>
+                        <div class="form-text">
+                            Collections are grouped by ChromaDB instance. The instance name is shown after the dash.
+                        </div>
                     </div>
                     
                     <div class="mb-3">
@@ -91,4 +96,26 @@
         {% endif %}
     </div>
 </div>
+
+{% block scripts %}
+<script>
+function updateInstanceId() {
+    const collectionSelect = document.getElementById('collection_name');
+    const instanceIdInput = document.getElementById('instance_id');
+    const selectedOption = collectionSelect.options[collectionSelect.selectedIndex];
+    
+    if (selectedOption && selectedOption.value) {
+        const instanceId = selectedOption.getAttribute('data-instance-id');
+        instanceIdInput.value = instanceId;
+    } else {
+        instanceIdInput.value = '';
+    }
+}
+
+// Initialize instance_id on page load if a collection is already selected
+document.addEventListener('DOMContentLoaded', function() {
+    updateInstanceId();
+});
+</script>
+{% endblock %}
 {% endblock %} 

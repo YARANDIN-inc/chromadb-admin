@@ -20,6 +20,21 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres-ui:
+    image: dpage/pgadmin4
+    ports:
+      - "8083:80"
+    volumes:
+      - ./.runtime/pgadmin:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - chromadb-network
+
   # ChromaDB Service
   chromadb:
     image: chromadb/chroma:1.0.12
@@ -36,7 +51,7 @@ services:
 
   # Web Application
   web:
-    image: europe-west3-docker.pkg.dev/getpin-proj-host/microservices/chromadb-admin:0.1.0
+    build: .
     ports:
       - "8080:8080"
     networks:
@@ -53,7 +68,6 @@ services:
       - INITIAL_ADMIN_USERNAME=admin
       - INITIAL_ADMIN_EMAIL=admin@localhost.com
       - INITIAL_ADMIN_PASSWORD=admin123
-      
     depends_on:
       postgres:
         condition: service_healthy

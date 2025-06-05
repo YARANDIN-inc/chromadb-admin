@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Instance Permissions - {{ instance.name }} - ChromaDB Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2"><i class="bi bi-people"></i> Instance Permissions</h1>
+        <p class="text-muted">Manage user permissions for {{ instance.name }}</p>
+    </div>
+    <a href="/instances" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Instances
+    </a>
+</div>
+
+<!-- Instance Info -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="card-title">{{ instance.name }}</h5>
+                        <p class="card-text">{{ instance.description or "No description" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>URL:</strong> <code>{{ instance.url }}</code></p>
+                        <p><strong>Status:</strong> 
+                            {% if instance.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                            {% if instance.is_default %}
+                                <span class="badge bg-warning text-dark">Default</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Permissions Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">User Permissions</h5>
+        <small class="text-muted">Configure what each user can do with this ChromaDB instance</small>
+    </div>
+    <div class="card-body">
+        {% if users %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th class="text-center">Search</th>
+                        <th class="text-center">Create Collections</th>
+                        <th class="text-center">Add Documents</th>
+                        <th class="text-center">Manage Instance</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <div>
+                                <strong>{{ user.username }}</strong>
+                                <br><small class="text-muted">{{ user.email }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            {% if user.is_super_admin %}
+                                <span class="badge bg-danger">Super Admin</span>
+                            {% elif user.can_admin %}
+                                <span class="badge bg-warning text-dark">Admin</span>
+                            {% else %}
+                                <span class="badge bg-secondary">User</span>
+                            {% endif %}
+                        </td>
+                        
+                        {% set permissions = user_permissions.get(user.id) %}
+                        {% if user.is_super_admin %}
+                            <!-- Super admins have all permissions -->
+                            <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
+                            <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
+                            <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
+                            <td class="text-center"><i class="bi bi-check-circle text-success"></i></td>
+                            <td>
+                                <span class="text-muted">Super Admin</span>
+                            </td>
+                        {% else %}
+                            <!-- Regular users with specific permissions -->
+                            <td class="text-center">
+                                {% if permissions and permissions.can_search %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if permissions and permissions.can_create %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if permissions and permissions.can_add %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if permissions and permissions.can_manage %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-primary" 
+                                            onclick="editPermissions({{ user.id }}, '{{ user.username }}', {{ permissions.can_search if permissions else false }}, {{ permissions.can_create if permissions else false }}, {{ permissions.can_add if permissions else false }}, {{ permissions.can_manage if permissions else false }})">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    {% if permissions %}
+                                    <form method="post" action="/instances/{{ instance.id }}/permissions/delete" class="d-inline">
+                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        <button type="submit" class="btn btn-outline-danger" 
+                                                onclick="return confirm('Remove all permissions for {{ user.username }}?')"
+                                                title="Remove all permissions">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-people fs-1 text-muted"></i>
+            <p class="text-muted mt-2">No users found</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Edit Permissions Modal -->
+<div class="modal fade" id="editPermissionsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/instances/{{ instance.id }}/permissions/update" id="editPermissionsForm">
+                <input type="hidden" name="user_id" id="editUserId">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil"></i> Edit Permissions for <span id="editUserName"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="can_search" value="true" id="editCanSearch">
+                        <label class="form-check-label" for="editCanSearch">
+                            <strong>Search Documents</strong>
+                            <br><small class="text-muted">Can query and search through documents in collections</small>
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="can_create" value="true" id="editCanCreate">
+                        <label class="form-check-label" for="editCanCreate">
+                            <strong>Create Collections</strong>
+                            <br><small class="text-muted">Can create and delete collections</small>
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="can_add" value="true" id="editCanAdd">
+                        <label class="form-check-label" for="editCanAdd">
+                            <strong>Add Documents</strong>
+                            <br><small class="text-muted">Can add documents to existing collections</small>
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="can_manage" value="true" id="editCanManage">
+                        <label class="form-check-label" for="editCanManage">
+                            <strong>Manage Instance</strong>
+                            <br><small class="text-muted">Can modify instance settings and configuration</small>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Permissions</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function editPermissions(userId, username, canSearch, canCreate, canAdd, canManage) {
+    document.getElementById('editUserId').value = userId;
+    document.getElementById('editUserName').textContent = username;
+    document.getElementById('editCanSearch').checked = canSearch;
+    document.getElementById('editCanCreate').checked = canCreate;
+    document.getElementById('editCanAdd').checked = canAdd;
+    document.getElementById('editCanManage').checked = canManage;
+    
+    const modal = new bootstrap.Modal(document.getElementById('editPermissionsModal'));
+    modal.show();
+}
+</script>
+{% endblock %} 

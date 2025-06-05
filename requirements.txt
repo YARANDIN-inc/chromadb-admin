@@ -12,5 +12,7 @@ httpx==0.28.1
 aiofiles==23.2.1
 numpy<2.0.0
 passlib[bcrypt]==1.7.4
-bcrypt==4.0.1
-python-jose[cryptography]==3.3.0 
+bcrypt==4.2.0
+python-jose[cryptography]==3.3.0
+langchain==0.3.7
+langchain-text-splitters==0.3.2 
