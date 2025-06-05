@@ -1,8 +1,7 @@
-name: Build and Publish
+name: Build and Publish Release
 
 on:
   push:
-    branches: [ main, develop ]
     tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
