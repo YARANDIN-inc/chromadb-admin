@@ -1,0 +1,36 @@
+apiVersion: v2
+name: chromadb-admin
+description: A Helm chart for ChromaDB Admin Panel - A web-based administration interface for ChromaDB
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+home: https://github.com/yourusername/chromadb-admin
+sources:
+  - https://github.com/yourusername/chromadb-admin
+maintainers:
+  - name: Your Name
+    email: your.email@example.com
+keywords:
+  - chromadb
+  - admin
+  - vector-database
+  - machine-learning
+  - fastapi
+annotations:
+  artifacthub.io/category: machine-learning
+  artifacthub.io/license: MIT
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/operator: "false"
+  artifacthub.io/containsSecurityUpdates: "true"
+  artifacthub.io/images: |
+    - name: chromadb-admin
+      image: ghcr.io/yourusername/chromadb-admin:latest
+    - name: chromadb
+      image: chromadb/chroma:1.0.12
+    - name: postgresql
+      image: postgres:15-alpine
+dependencies:
+  - name: postgresql
+    version: "12.12.10"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled 

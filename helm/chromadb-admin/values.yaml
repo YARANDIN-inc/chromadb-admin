@@ -1,0 +1,253 @@
+# Default values for chromadb-admin.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Global configuration
+global:
+  imageRegistry: ""
+  storageClass: ""
+
+# ChromaDB Admin Web Application
+chromadbAdmin:
+  image:
+    registry: ghcr.io
+    repository: yourusername/chromadb-admin
+    tag: ""  # If not set, will use Chart.appVersion
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+  
+  replicaCount: 3
+  
+  # Application configuration
+  config:
+    # Database URL (will be auto-generated if using internal PostgreSQL)
+    databaseUrl: ""
+    # ChromaDB URL (will be auto-generated if using internal ChromaDB)
+    chromadbUrl: ""
+    # Secret key for sessions (auto-generated if not provided)
+    secretKey: ""
+    # ChromaDB authentication token
+    chromadbToken: ""
+    
+    # Initial admin user configuration
+    initialAdmin:
+      enabled: true
+      username: "admin"
+      email: "admin@example.com"
+      password: ""  # If empty, a random password will be generated
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+    annotations: {}
+  
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  
+  # Health checks
+  livenessProbe:
+    httpGet:
+      path: /auth/login
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /auth/login
+      port: 8080
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+  
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  
+  # Pod security context
+  podSecurityContext:
+    fsGroup: 1000
+  
+  # Node selector, tolerations and affinity
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  
+  # Pod annotations
+  podAnnotations: {}
+  
+  # Environment variables
+  extraEnvVars: []
+  extraEnvVarsSecret: ""
+  extraEnvVarsConfigMap: ""
+
+# ChromaDB Vector Database
+chromadb:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: chromadb/chroma
+    tag: "1.0.12"
+    pullPolicy: IfNotPresent
+  
+  replicaCount: 1
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 8000
+    targetPort: 8000
+  
+  # Persistence
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    annotations: {}
+  
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  
+  # Health checks
+  livenessProbe:
+    httpGet:
+      path: /api/v1/heartbeat
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  
+  readinessProbe:
+    httpGet:
+      path: /api/v1/heartbeat
+      port: 8000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  
+  # Environment variables
+  config:
+    host: "0.0.0.0"
+    port: "8000"
+    anonymizedTelemetry: "False"
+  
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  
+  # Node selector, tolerations and affinity
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# PostgreSQL Database (using Bitnami chart)
+postgresql:
+  enabled: true
+  auth:
+    enablePostgresUser: true
+    postgresPassword: ""  # Auto-generated if empty
+    username: "chromadb"
+    password: ""  # Auto-generated if empty
+    database: "chromadb_admin"
+  
+  primary:
+    persistence:
+      enabled: true
+      storageClass: ""
+      accessModes:
+        - ReadWriteOnce
+      size: 10Gi
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+  
+  metrics:
+    enabled: false
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: chromadb-admin.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: chromadb-admin-tls
+  #    hosts:
+  #      - chromadb-admin.local
+
+# ServiceAccount
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
+
+# Horizontal Pod Autoscaler
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Network Policy
+networkPolicy:
+  enabled: false
+  ingress: []
+  egress: []
+
+# Monitoring
+monitoring:
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    interval: "30s"
+    scrapeTimeout: "10s"
+    labels: {}
+
+# RBAC
+rbac:
+  create: false 

@@ -1,0 +1,17 @@
+{{- if .Values.chromadb.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "chromadb-admin.fullname" . }}-chromadb
+  labels:
+    {{- include "chromadb-admin.chromadbLabels" . | nindent 4 }}
+spec:
+  type: {{ .Values.chromadb.service.type }}
+  ports:
+    - port: {{ .Values.chromadb.service.port }}
+      targetPort: {{ .Values.chromadb.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "chromadb-admin.chromadbSelectorLabels" . | nindent 4 }}
+{{- end }} 
