@@ -230,21 +230,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Deploy to staging (only on main branch)
-  deploy-staging:
-    runs-on: ubuntu-latest
-    needs: [build-image, publish-helm]
-    if: github.ref == 'refs/heads/main'
-    environment: staging
-    steps:
-      - name: Deploy to staging
-        run: |
-          echo "🚀 Deploying to staging environment"
-          echo "Image: ${{ needs.build-image.outputs.image-tag }}"
-          echo "Chart version: latest"
-          # Add your deployment logic here
-          # For example, using kubectl or ArgoCD
-          
   # Notify on completion
   notify:
     runs-on: ubuntu-latest
