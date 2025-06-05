@@ -43,13 +43,21 @@ jobs:
         id: check
         run: |
           # Get the latest tag
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "Latest tag: $LATEST_TAG"
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "Latest tag: ${LATEST_TAG:-'none'}"
           
           # Check if this is a manual workflow dispatch
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "version_type=${{ inputs.version_type }}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # If no tags exist, this is the first release
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No existing tags found. Creating initial release."
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "version_type=minor" >> $GITHUB_OUTPUT
             exit 0
           fi
           
@@ -103,11 +111,17 @@ jobs:
         id: version
         run: |
           # Get the latest tag
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "Latest tag: $LATEST_TAG"
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "Latest tag: ${LATEST_TAG:-'none'}"
           
-          # Remove 'v' prefix if present
-          CURRENT_VERSION=${LATEST_TAG#v}
+          # Handle initial release case
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No existing tags found. Starting with initial version."
+            CURRENT_VERSION="0.0.0"
+          else
+            # Remove 'v' prefix if present
+            CURRENT_VERSION=${LATEST_TAG#v}
+          fi
           
           # Split version into components
           IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
@@ -138,9 +152,15 @@ jobs:
               ;;
           esac
           
+          # For initial release, ensure we start at least at 1.0.0
+          if [ -z "$LATEST_TAG" ] && [ "$MAJOR" -eq 0 ]; then
+            MAJOR=1
+          fi
+          
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           NEW_TAG="v$NEW_VERSION"
           
+          echo "Current version: $CURRENT_VERSION"
           echo "New version: $NEW_VERSION"
           echo "New tag: $NEW_TAG"
           
@@ -184,7 +204,25 @@ jobs:
             
             CHANGELOG="${CHANGELOG}**Full Changelog**: https://github.com/${{ github.repository }}/compare/${LATEST_TAG}...v${{ steps.version.outputs.new_version }}"
           else
-            CHANGELOG="## What's Changed\n\nInitial release of ChromaDB Admin Panel\n\n**Full Changelog**: https://github.com/${{ github.repository }}/commits/v${{ steps.version.outputs.new_version }}"
+            echo "No previous tags found. Generating initial release changelog."
+            
+            # Generate changelog for initial release
+            CHANGELOG="## What's Changed\n\n"
+            
+            # Get all commits for initial release
+            COMMITS=$(git log --pretty=format:"* %s by @%an in %h")
+            
+            if [ -n "$COMMITS" ]; then
+              CHANGELOG="${CHANGELOG}${COMMITS}\n\n"
+            fi
+            
+            # Add all contributors for initial release
+            CONTRIBUTORS=$(git log --pretty=format:"%an" | sort | uniq | sed 's/^/* @/')
+            if [ -n "$CONTRIBUTORS" ]; then
+              CHANGELOG="${CHANGELOG}## Contributors\n${CONTRIBUTORS}\n\n"
+            fi
+            
+            CHANGELOG="${CHANGELOG}🎉 **Initial release of ChromaDB Admin Panel**\n\n**Full Changelog**: https://github.com/${{ github.repository }}/commits/v${{ steps.version.outputs.new_version }}"
           fi
           
           # Save changelog to file
