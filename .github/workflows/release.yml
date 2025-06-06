@@ -188,18 +188,6 @@ jobs:
               CHANGELOG="${CHANGELOG}${COMMITS}\n\n"
             fi
             
-            # Get unique contributors by GitHub username
-            CONTRIBUTORS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"%ae" | \
-              sed 's/\([^@]*\)@.*\.com/\1/g' | \
-              sed 's/\([^@]*\)@users\.noreply\.github\.com/\1/g' | \
-              grep -v "^[0-9]" | \
-              sort | uniq | \
-              sed 's/^/* @/')
-            
-            if [ -n "$CONTRIBUTORS" ]; then
-              CHANGELOG="${CHANGELOG}## New Contributors\n${CONTRIBUTORS}\n\n"
-            fi
-            
             CHANGELOG="${CHANGELOG}**Full Changelog**: https://github.com/${{ github.repository }}/compare/${LATEST_TAG}...v${{ steps.version.outputs.new_version }}"
           else
             echo "No previous tags found. Generating initial release changelog."
@@ -212,18 +200,6 @@ jobs:
             
             if [ -n "$COMMITS" ]; then
               CHANGELOG="${CHANGELOG}${COMMITS}\n\n"
-            fi
-            
-            # Get all unique contributors by GitHub username for initial release
-            CONTRIBUTORS=$(git log --pretty=format:"%ae" | \
-              sed 's/\([^@]*\)@.*\.com/\1/g' | \
-              sed 's/\([^@]*\)@users\.noreply\.github\.com/\1/g' | \
-              grep -v "^[0-9]" | \
-              sort | uniq | \
-              sed 's/^/* @/')
-            
-            if [ -n "$CONTRIBUTORS" ]; then
-              CHANGELOG="${CHANGELOG}## Contributors\n${CONTRIBUTORS}\n\n"
             fi
             
             CHANGELOG="${CHANGELOG}🎉 **Initial release of ChromaDB Admin Panel**\n\n**Full Changelog**: https://github.com/${{ github.repository }}/commits/v${{ steps.version.outputs.new_version }}"
