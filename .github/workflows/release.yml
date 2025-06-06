@@ -2,13 +2,27 @@ name: New Release
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  # workflow_dispatch:
+  #   inputs:
+  #     version_type:
+  #       description: 'Version bump type'
+  #       required: true
+  #       default: 'patch'
+  #       type: choice
+  #       options:
+  #         - patch
+  #         - minor
+  #         - major
+  #     pre_release:
+  #       description: 'Mark as pre-release'
+  #       required: false
+  #       default: false
+  #       type: boolean
 
 permissions:
   contents: write
   packages: write
-  pull-requests: read
 
 jobs:
   check-changes:
@@ -16,12 +30,12 @@ jobs:
     outputs:
       should_release: ${{ steps.check.outputs.should_release }}
       version_type: ${{ steps.check.outputs.version_type }}
+      commits_since_tag: ${{ steps.check.outputs.commits_since_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check if release needed
         id: check
@@ -32,8 +46,10 @@ jobs:
           
           # Check if this is a manual workflow dispatch
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual release triggered"
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "version_type=${{ inputs.version_type }}" >> $GITHUB_OUTPUT
+            echo "commits_since_tag=manual" >> $GITHUB_OUTPUT
             exit 0
           fi
           
@@ -42,33 +58,36 @@ jobs:
             echo "No existing tags found. Creating initial release."
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "version_type=minor" >> $GITHUB_OUTPUT
+            echo "commits_since_tag=initial" >> $GITHUB_OUTPUT
             exit 0
           fi
           
           # Get commits since last tag
           COMMITS_SINCE_TAG=$(git rev-list ${LATEST_TAG}..HEAD --count)
           echo "Commits since last tag: $COMMITS_SINCE_TAG"
+          echo "commits_since_tag=$COMMITS_SINCE_TAG" >> $GITHUB_OUTPUT
           
           if [ "$COMMITS_SINCE_TAG" -gt 0 ]; then
             # Analyze commit messages to determine version bump type
             COMMIT_MESSAGES=$(git log ${LATEST_TAG}..HEAD --pretty=format:"%s")
-            echo "Commit messages since last tag:"
-            echo "$COMMIT_MESSAGES"
+            echo "Analyzing commit messages for version type..."
             
             # Check for breaking changes (major version)
-            if echo "$COMMIT_MESSAGES" | grep -qE "(BREAKING|breaking|major)"; then
+            if echo "$COMMIT_MESSAGES" | grep -qiE "(BREAKING|breaking change|major)"; then
               VERSION_TYPE="major"
             # Check for new features (minor version)
-            elif echo "$COMMIT_MESSAGES" | grep -qE "(feat|feature|minor)"; then
+            elif echo "$COMMIT_MESSAGES" | grep -qiE "(feat|feature|add|new)"; then
               VERSION_TYPE="minor"
             # Default to patch version
             else
               VERSION_TYPE="patch"
             fi
             
+            echo "Determined version type: $VERSION_TYPE"
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
           else
+            echo "No commits since last tag. Skipping release."
             echo "should_release=false" >> $GITHUB_OUTPUT
           fi
 
@@ -78,7 +97,7 @@ jobs:
     if: needs.check-changes.outputs.should_release == 'true'
     outputs:
       new_version: ${{ steps.version.outputs.new_version }}
-      release_created: ${{ steps.release.outputs.release_created }}
+      new_tag: ${{ steps.version.outputs.new_tag }}
     steps:
       - uses: actions/create-github-app-token@v1
         id: app-token
@@ -121,6 +140,7 @@ jobs:
           
           # Determine version bump type
           VERSION_TYPE="${{ needs.check-changes.outputs.version_type }}"
+          echo "Version bump type: $VERSION_TYPE"
           
           # Calculate new version
           case $VERSION_TYPE in
@@ -157,80 +177,107 @@ jobs:
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
-      - name: Update Helm Chart version
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.14.0'
+
+      - name: Add Helm repositories
         run: |
-          cd helm/chromadb-admin
-          # Update chart version and appVersion
-          sed -i "s/version: .*/version: ${{ steps.version.outputs.new_version }}/" Chart.yaml
-          sed -i "s/appVersion: .*/appVersion: \"${{ steps.version.outputs.new_version }}\"/" Chart.yaml
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+
+      - name: Update chart versions
+        run: |
+          echo "Updating chart versions to ${{ steps.version.outputs.new_version }}"
           
-          echo "Updated Chart.yaml (for reference):"
-          cat Chart.yaml
-          echo ""
-          echo "Note: These changes will be applied during the build process, not committed to main."
+          for chart in charts/*/; do
+            if [ -f "$chart/Chart.yaml" ]; then
+              echo "Updating chart: $chart"
+              cd "$chart"
+              
+              # Update dependencies
+              helm dependency update
+              
+              # Update chart version and appVersion
+              sed -i "s/^version: .*/version: ${{ steps.version.outputs.new_version }}/" Chart.yaml
+              sed -i "s/^appVersion: .*/appVersion: \"${{ steps.version.outputs.new_version }}\"/" Chart.yaml
+              
+              echo "Updated Chart.yaml:"
+              cat Chart.yaml | grep -E "(version|appVersion):"
+              
+              cd - > /dev/null
+            fi
+          done
 
       - name: Generate changelog
         id: changelog
         run: |
-          # Get the latest tag for changelog generation
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           
           if [ -n "$LATEST_TAG" ]; then
             echo "Generating changelog since $LATEST_TAG"
             
             # Generate changelog
-            CHANGELOG="## What's Changed\n\n"
+            cat > CHANGELOG.md << 'EOF'
+          ## What's Changed
+          
+          EOF
             
-            # Get commits since last tag with author info
-            COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"* %s by @%ae in %h" | sed 's/@\([^@]*\)@.*\.com/@\1/g' | sed 's/@\([^@]*\)@users\.noreply\.github\.com/@\1/g')
+            # Get commits since last tag with proper formatting
+            git log ${LATEST_TAG}..HEAD --pretty=format:"* %s (%h)" >> CHANGELOG.md
             
-            if [ -n "$COMMITS" ]; then
-              CHANGELOG="${CHANGELOG}${COMMITS}\n\n"
-            fi
-            
-            CHANGELOG="${CHANGELOG}**Full Changelog**: https://github.com/${{ github.repository }}/compare/${LATEST_TAG}...v${{ steps.version.outputs.new_version }}"
+            cat >> CHANGELOG.md << EOF
+          
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/${LATEST_TAG}...${{ steps.version.outputs.new_tag }}
+          EOF
           else
-            echo "No previous tags found. Generating initial release changelog."
+            echo "Generating initial release changelog"
             
-            # Generate changelog for initial release
-            CHANGELOG="## What's Changed\n\n"
-            
-            # Get all commits for initial release with author info
-            COMMITS=$(git log --pretty=format:"* %s by @%ae in %h" | sed 's/@\([^@]*\)@.*\.com/@\1/g' | sed 's/@\([^@]*\)@users\.noreply\.github\.com/@\1/g')
-            
-            if [ -n "$COMMITS" ]; then
-              CHANGELOG="${CHANGELOG}${COMMITS}\n\n"
-            fi
-            
-            CHANGELOG="${CHANGELOG}🎉 **Initial release of ChromaDB Admin Panel**\n\n**Full Changelog**: https://github.com/${{ github.repository }}/commits/v${{ steps.version.outputs.new_version }}"
+            cat > CHANGELOG.md << 'EOF'
+          ## 🎉 Initial Release
+          
+          This is the first release of ChromaDB Admin Panel - a web-based administration interface for ChromaDB.
+          
+          ### Features
+          
+          * Complete web-based ChromaDB administration interface
+          * Kubernetes Helm chart for easy deployment
+          * Docker support with multi-architecture builds
+          * Comprehensive configuration options
+          
+          ### Installation
+          
+          ```bash
+          # Using Helm
+          helm repo add chromadb-admin https://yarandin-inc.github.io/chromadb-admin
+          helm install my-chromadb-admin chromadb-admin/chromadb-admin
+          
+          # Using Docker
+          docker run -p 8000:8000 ghcr.io/yarandin-inc/chromadb-admin:latest
+          ```
+          EOF
           fi
           
-          # Save changelog to file
-          echo -e "$CHANGELOG" > CHANGELOG.md
           echo "Generated changelog:"
           cat CHANGELOG.md
 
       - name: Create and push tag
         run: |
-          git tag -a "v${{ steps.version.outputs.new_version }}" -m "Release v${{ steps.version.outputs.new_version }}"
-          git push origin "v${{ steps.version.outputs.new_version }}"
+          git tag -a "${{ steps.version.outputs.new_tag }}" -m "Release ${{ steps.version.outputs.new_tag }}"
+          git push origin "${{ steps.version.outputs.new_tag }}"
 
       - name: Create GitHub Release
-        id: release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.new_version }}
-          name: Release v${{ steps.version.outputs.new_version }}
+          tag_name: ${{ steps.version.outputs.new_tag }}
+          name: Release ${{ steps.version.outputs.new_tag }}
           body_path: CHANGELOG.md
           draft: false
           prerelease: ${{ inputs.pre_release || false }}
           generate_release_notes: false
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-
-      - name: Set release created output
-        run: |
-          echo "release_created=true" >> $GITHUB_OUTPUT
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   notify-completion:
     runs-on: ubuntu-latest
@@ -240,12 +287,17 @@ jobs:
       - name: Notify completion
         run: |
           if [ "${{ needs.check-changes.outputs.should_release }}" = "false" ]; then
-            echo "ℹ️ No new commits since last release. Skipping release creation."
+            if [ "${{ needs.check-changes.outputs.commits_since_tag }}" = "0" ]; then
+              echo "ℹ️ No new commits since last release. Skipping release creation."
+            else
+              echo "ℹ️ Release conditions not met. Skipping release creation."
+            fi
           elif [ "${{ needs.create-release.result }}" = "success" ]; then
-            echo "🎉 Successfully created release v${{ needs.create-release.outputs.new_version }}!"
-            echo "📦 The build-and-publish workflow will be triggered automatically by the new tag."
-            echo "🔧 Helm chart versions will be updated during the build process."
-            echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.create-release.outputs.new_version }}"
+            echo "🎉 Successfully created release ${{ needs.create-release.outputs.new_tag }}!"
+            echo "📦 The build-and-publish workflow will be triggered automatically."
+            echo "🚀 Docker images and Helm charts will be published shortly."
+            echo "🔗 Release: https://github.com/${{ github.repository }}/releases/tag/${{ needs.create-release.outputs.new_tag }}"
+            echo "📊 Commits since last release: ${{ needs.check-changes.outputs.commits_since_tag }}"
           else
             echo "❌ Failed to create release"
             exit 1
