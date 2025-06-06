@@ -4,22 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
-    inputs:
-      version_type:
-        description: 'Version bump type'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-        - major
-        - minor
-        - patch
-      pre_release:
-        description: 'Create as pre-release'
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: write
@@ -96,11 +80,17 @@ jobs:
       new_version: ${{ steps.version.outputs.new_version }}
       release_created: ${{ steps.release.outputs.release_created }}
     steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.VERSION_BUMPER_APPID }}
+          private-key: ${{ secrets.VERSION_BUMPER_SECRET }}
+    
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Configure Git
         run: |
@@ -174,8 +164,10 @@ jobs:
           sed -i "s/version: .*/version: ${{ steps.version.outputs.new_version }}/" Chart.yaml
           sed -i "s/appVersion: .*/appVersion: \"${{ steps.version.outputs.new_version }}\"/" Chart.yaml
           
-          echo "Updated Chart.yaml:"
+          echo "Updated Chart.yaml (for reference):"
           cat Chart.yaml
+          echo ""
+          echo "Note: These changes will be applied during the build process, not committed to main."
 
       - name: Generate changelog
         id: changelog
@@ -230,12 +222,6 @@ jobs:
           echo "Generated changelog:"
           cat CHANGELOG.md
 
-      - name: Commit version bump
-        run: |
-          git add helm/chromadb-admin/Chart.yaml
-          git commit -m "chore: bump version to v${{ steps.version.outputs.new_version }}"
-          git push origin main
-
       - name: Create and push tag
         run: |
           git tag -a "v${{ steps.version.outputs.new_version }}" -m "Release v${{ steps.version.outputs.new_version }}"
@@ -252,7 +238,7 @@ jobs:
           prerelease: ${{ inputs.pre_release || false }}
           generate_release_notes: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Set release created output
         run: |
@@ -270,6 +256,7 @@ jobs:
           elif [ "${{ needs.create-release.result }}" = "success" ]; then
             echo "🎉 Successfully created release v${{ needs.create-release.outputs.new_version }}!"
             echo "📦 The build-and-publish workflow will be triggered automatically by the new tag."
+            echo "🔧 Helm chart versions will be updated during the build process."
             echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.create-release.outputs.new_version }}"
           else
             echo "❌ Failed to create release"
