@@ -16,7 +16,7 @@ spec:
         {{- include "chromadb-admin.chromadbLabels" . | nindent 8 }}
     spec:
       securityContext:
-        {{- toYaml .Values.chromadb.securityContext | nindent 8 }}
+        {{- toYaml .Values.chromadb.podSecurityContext | nindent 8 }}
       containers:
         - name: chromadb
           securityContext:
