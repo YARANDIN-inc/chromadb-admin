@@ -107,6 +107,14 @@ jobs:
       pages: write
       id-token: write
     steps:
+      # TODO: Add this to filter charts updates only
+      # - uses: dorny/paths-filter@v3
+      #   id: changes
+      #   with:
+      #     filters: |
+      #       charts:
+      #         - 'charts/**'
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
