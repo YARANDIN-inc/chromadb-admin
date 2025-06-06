@@ -181,15 +181,21 @@ jobs:
             # Generate changelog
             CHANGELOG="## What's Changed\n\n"
             
-            # Get commits since last tag
-            COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"* %s by @%an in %h")
+            # Get commits since last tag with author info
+            COMMITS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"* %s by @%ae in %h" | sed 's/@\([^@]*\)@.*\.com/@\1/g' | sed 's/@\([^@]*\)@users\.noreply\.github\.com/@\1/g')
             
             if [ -n "$COMMITS" ]; then
               CHANGELOG="${CHANGELOG}${COMMITS}\n\n"
             fi
             
-            # Add contributors
-            CONTRIBUTORS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"%an" | sort | uniq | sed 's/^/* @/')
+            # Get unique contributors by GitHub username
+            CONTRIBUTORS=$(git log ${LATEST_TAG}..HEAD --pretty=format:"%ae" | \
+              sed 's/\([^@]*\)@.*\.com/\1/g' | \
+              sed 's/\([^@]*\)@users\.noreply\.github\.com/\1/g' | \
+              grep -v "^[0-9]" | \
+              sort | uniq | \
+              sed 's/^/* @/')
+            
             if [ -n "$CONTRIBUTORS" ]; then
               CHANGELOG="${CHANGELOG}## New Contributors\n${CONTRIBUTORS}\n\n"
             fi
@@ -201,15 +207,21 @@ jobs:
             # Generate changelog for initial release
             CHANGELOG="## What's Changed\n\n"
             
-            # Get all commits for initial release
-            COMMITS=$(git log --pretty=format:"* %s by @%an in %h")
+            # Get all commits for initial release with author info
+            COMMITS=$(git log --pretty=format:"* %s by @%ae in %h" | sed 's/@\([^@]*\)@.*\.com/@\1/g' | sed 's/@\([^@]*\)@users\.noreply\.github\.com/@\1/g')
             
             if [ -n "$COMMITS" ]; then
               CHANGELOG="${CHANGELOG}${COMMITS}\n\n"
             fi
             
-            # Add all contributors for initial release
-            CONTRIBUTORS=$(git log --pretty=format:"%an" | sort | uniq | sed 's/^/* @/')
+            # Get all unique contributors by GitHub username for initial release
+            CONTRIBUTORS=$(git log --pretty=format:"%ae" | \
+              sed 's/\([^@]*\)@.*\.com/\1/g' | \
+              sed 's/\([^@]*\)@users\.noreply\.github\.com/\1/g' | \
+              grep -v "^[0-9]" | \
+              sort | uniq | \
+              sed 's/^/* @/')
+            
             if [ -n "$CONTRIBUTORS" ]; then
               CHANGELOG="${CHANGELOG}## Contributors\n${CONTRIBUTORS}\n\n"
             fi
