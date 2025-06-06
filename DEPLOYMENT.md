@@ -16,7 +16,7 @@ The deployment consists of three main components:
 
 ```bash
 # Add the Helm repository
-helm repo add chromadb-admin https://yourusername.github.io/chromadb-admin
+helm repo add chromadb-admin https://yarandin-inc.github.io/chromadb-admin
 helm repo update
 
 # Install with default values

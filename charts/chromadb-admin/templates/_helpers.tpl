@@ -173,4 +173,15 @@ Generate initial admin password if not provided
 {{- else }}
 {{- randAlphaNum 16 }}
 {{- end }}
+{{- end }}
+
+{{/*
+Get the secret name to use for environment variables
+*/}}
+{{- define "chromadb-admin.secretName" -}}
+{{- if .Values.chromadbAdmin.config.existingSecret.enabled }}
+{{- .Values.chromadbAdmin.config.existingSecret.secretName }}
+{{- else }}
+{{- include "chromadb-admin.fullname" . }}-secret
+{{- end }}
 {{- end }} 

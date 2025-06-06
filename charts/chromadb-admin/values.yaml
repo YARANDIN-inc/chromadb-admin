@@ -35,6 +35,15 @@ chromadbAdmin:
       username: "admin"
       email: "admin@example.com"
       password: ""  # If empty, a random password will be generated
+    
+    # Use existing secret instead of creating new ones
+    # When enabled, all sensitive environment variables will be loaded from the specified secret
+    existingSecret:
+      # Set to true to use an existing secret instead of generated ones
+      enabled: false
+      # Name of the existing secret containing environment variables
+      # The secret should contain keys like: SECRET_KEY, DATABASE_URL, CHROMADB_TOKEN, etc.
+      secretName: ""
   
   # Service configuration
   service:

@@ -140,6 +140,43 @@ chromadb:
     size: 100Gi
 ```
 
+## Using Existing Secrets
+
+By default, the chart creates its own Secret resources to store sensitive values like database passwords and API tokens. However, you can configure the chart to use an existing secret instead.
+
+To use an existing secret, set `chromadbAdmin.config.existingSecret.enabled: true` and specify the secret name:
+
+```yaml
+chromadbAdmin:
+  config:
+    existingSecret:
+      enabled: true
+      secretName: "my-chromadb-secrets"
+```
+
+The existing secret should contain environment variable keys that the application expects, such as:
+- `SECRET_KEY`: Application secret key for sessions
+- `DATABASE_URL`: Database connection string  
+- `CHROMADB_TOKEN`: ChromaDB authentication token (optional)
+- `INITIAL_ADMIN_PASSWORD`: Initial admin user password
+- `POSTGRES_PASSWORD`: PostgreSQL password (if using internal PostgreSQL)
+
+When using existing secrets:
+- The chart will not create its own Secret resource
+- You must ensure the referenced secret exists in the same namespace
+- The secret is loaded using `envFrom`, so all key-value pairs become environment variables
+- Only include the variables you want to override - others will use chart defaults
+- The chart maintains full backward compatibility
+
+Example of creating a secret manually:
+```bash
+kubectl create secret generic my-chromadb-secrets \
+  --from-literal=SECRET_KEY="your-secret-key-here" \
+  --from-literal=DATABASE_URL="postgresql://user:pass@host:5432/db" \
+  --from-literal=CHROMADB_TOKEN="your-chromadb-token" \
+  --from-literal=INITIAL_ADMIN_PASSWORD="your-admin-password"
+```
+
 ## Values
 
 | Key | Type | Default | Description |

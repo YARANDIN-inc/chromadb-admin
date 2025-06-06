@@ -38,28 +38,11 @@ spec:
               containerPort: {{ .Values.chromadbAdmin.service.targetPort }}
               protocol: TCP
           env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "chromadb-admin.fullname" . }}-secret
-                  key: DATABASE_URL
             - name: CHROMADB_URL
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "chromadb-admin.fullname" . }}-config
                   key: CHROMADB_URL
-            - name: SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "chromadb-admin.fullname" . }}-secret
-                  key: SECRET_KEY
-            {{- if .Values.chromadbAdmin.config.chromadbToken }}
-            - name: CHROMADB_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "chromadb-admin.fullname" . }}-secret
-                  key: CHROMADB_TOKEN
-            {{- end }}
             {{- if .Values.chromadbAdmin.config.initialAdmin.enabled }}
             - name: CREATE_INITIAL_ADMIN
               valueFrom:
@@ -76,28 +59,20 @@ spec:
                 configMapKeyRef:
                   name: {{ include "chromadb-admin.fullname" . }}-config
                   key: INITIAL_ADMIN_EMAIL
-            - name: INITIAL_ADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "chromadb-admin.fullname" . }}-secret
-                  key: INITIAL_ADMIN_PASSWORD
-            {{- end }}
-            {{- if .Values.postgresql.enabled }}
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "chromadb-admin.fullname" . }}-secret
-                  key: POSTGRES_PASSWORD
             {{- end }}
             {{- if .Values.chromadbAdmin.extraEnvVars }}
             {{- toYaml .Values.chromadbAdmin.extraEnvVars | nindent 12 }}
             {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ include "chromadb-admin.secretName" . }}
             {{- if .Values.chromadbAdmin.extraEnvVarsSecret }}
-            - name: EXTRA_SECRETS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.chromadbAdmin.extraEnvVarsSecret }}
-                  key: secrets
+            - secretRef:
+                name: {{ .Values.chromadbAdmin.extraEnvVarsSecret }}
+            {{- end }}
+            {{- if .Values.chromadbAdmin.extraEnvVarsConfigMap }}
+            - configMapRef:
+                name: {{ .Values.chromadbAdmin.extraEnvVarsConfigMap }}
             {{- end }}
           livenessProbe:
             {{- toYaml .Values.chromadbAdmin.livenessProbe | nindent 12 }}

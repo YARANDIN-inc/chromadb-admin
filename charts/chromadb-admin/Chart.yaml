@@ -31,6 +31,6 @@ annotations:
       image: postgres:17.5-alpine
 dependencies:
   - name: postgresql
-    version: "12.12.10"
+    version: "16.7.10"
     repository: "https://charts.bitnami.com/bitnami"
     condition: postgresql.enabled 
