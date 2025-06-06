@@ -1,4 +1,4 @@
-name: Build and Publish Release
+name: Build and Publish Artifacts
 
 on:
   push:
@@ -217,7 +217,7 @@ jobs:
                   <h2>Usage</h2>
                   <div class="usage">
                       <p>Add this Helm repository:</p>
-                      <pre><code>helm repo add chromadb-admin https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+                      <pre><code>helm repo add chromadb-admin https://yarandin-inc.github.io/${{ github.event.repository.name }}
           helm repo update</code></pre>
                       
                       <p>Install a chart:</p>
@@ -228,7 +228,7 @@ jobs:
                   <p>See the <a href="index.yaml">repository index</a> for available charts and versions.</p>
                   
                   <h2>Source Code</h2>
-                  <p>Charts source code is available at <a href="https://github.com/${{ github.repository }}">GitHub</a>.</p>
+                  <p>Charts source code is available at <a href="https://github.com/yarandin-inc">GitHub</a>.</p>
               </div>
           </body>
           </html>
@@ -248,10 +248,6 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
 
   # Notify on completion
   notify:
