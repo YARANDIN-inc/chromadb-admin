@@ -4,12 +4,12 @@ description: A Helm chart for ChromaDB Admin Panel - A web-based administration 
 type: application
 version: 0.1.0
 appVersion: "1.0.0"
-home: https://github.com/yourusername/chromadb-admin
+home: https://github.com/yarandin-inc/chromadb-admin
 sources:
-  - https://github.com/yourusername/chromadb-admin
+  - https://github.com/yarandin-inc/chromadb-admin
 maintainers:
-  - name: Your Name
-    email: your.email@example.com
+  - name: Max
+    email: max@yarandin-inc.com
 keywords:
   - chromadb
   - admin
@@ -24,11 +24,11 @@ annotations:
   artifacthub.io/containsSecurityUpdates: "true"
   artifacthub.io/images: |
     - name: chromadb-admin
-      image: ghcr.io/yourusername/chromadb-admin:latest
+      image: ghcr.io/yarandin-inc/chromadb-admin:latest
     - name: chromadb
       image: chromadb/chroma:1.0.12
     - name: postgresql
-      image: postgres:15-alpine
+      image: postgres:17.5-alpine
 dependencies:
   - name: postgresql
     version: "12.12.10"

@@ -11,7 +11,7 @@ global:
 chromadbAdmin:
   image:
     registry: ghcr.io
-    repository: yourusername/chromadb-admin
+    repository: YARANDIN-inc/chromadb-admin
     tag: ""  # If not set, will use Chart.appVersion
     pullPolicy: IfNotPresent
     pullSecrets: []
