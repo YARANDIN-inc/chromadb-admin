@@ -21,7 +21,7 @@ The main chart for deploying ChromaDB Admin Panel - a web-based administration i
 ### Adding the Helm Repository
 
 ```bash
-helm repo add chromadb-admin https://maxintech.github.io/chromadb-admin
+helm repo add chromadb-admin https://yarandin-inc.github.io/chromadb-admin
 helm repo update
 ```
 
