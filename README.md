@@ -475,4 +475,4 @@ MIT License - see LICENSE file for details.
 
 ---
 
-**Built with ❤️ for the ChromaDB community** 
+**Built with ❤️ by YARANDIN-inc for the ChromaDB community** 
