@@ -102,6 +102,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+      pages: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -123,14 +125,17 @@ jobs:
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo update
 
-      - name: Update chart versions
+      - name: Update chart versions and package
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "Updating charts to version: $VERSION"
           
+          # Create directory for packaged charts
+          mkdir -p .packaged-charts
+          
           for chart in charts/*/; do
             if [ -f "$chart/Chart.yaml" ]; then
-              echo "Updating chart: $chart"
+              echo "Processing chart: $chart"
               cd "$chart"
               
               # Update dependencies
@@ -142,44 +147,17 @@ jobs:
               # Update appVersion to match the release tag
               sed -i "s/^appVersion: .*/appVersion: \"$VERSION\"/" Chart.yaml
               
+              # Package the chart
+              helm package . --destination ../../.packaged-charts
+              
               cd - > /dev/null
             fi
           done
+          
+          echo "Packaged charts:"
+          ls -la .packaged-charts/
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.6.0
-        with:
-          charts_dir: charts
-          config: .github/cr.yaml
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
-  # Update Helm repository index for GitHub Pages
-  update-index:
-    runs-on: ubuntu-latest
-    needs: release-charts
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: '3.14.0'
-
-      - name: Update Helm repository index
+      - name: Deploy to GitHub Pages
         run: |
           # Switch to gh-pages branch
           git checkout gh-pages || git checkout --orphan gh-pages
@@ -187,8 +165,11 @@ jobs:
           # Clean the branch but keep .git
           git rm -rf . || true
           
-          # Create index.yaml from GitHub releases
-          helm repo index . --url https://github.com/${{ github.repository }}/releases/download
+          # Copy packaged charts
+          cp .packaged-charts/*.tgz . || true
+          
+          # Create index.yaml from packaged charts
+          helm repo index . --url https://yarandin-inc.github.io/${{ github.event.repository.name }}
           
           # Create a simple index.html for the repository
           cat > index.html << 'EOF'
@@ -228,15 +209,15 @@ jobs:
                   <p>See the <a href="index.yaml">repository index</a> for available charts and versions.</p>
                   
                   <h2>Source Code</h2>
-                  <p>Charts source code is available at <a href="https://github.com/yarandin-inc">GitHub</a>.</p>
+                  <p>Charts source code is available at <a href="https://github.com/${{ github.repository }}">GitHub</a>.</p>
               </div>
           </body>
           </html>
           EOF
           
           # Add and commit
-          git add index.yaml index.html
-          git commit -m "Update Helm repository index for ${{ github.ref_name }}" || exit 0
+          git add .
+          git commit -m "Deploy Helm charts for ${{ github.ref_name }}" || exit 0
           
           # Push to gh-pages
           git push origin gh-pages
@@ -249,15 +230,19 @@ jobs:
         with:
           path: '.'
 
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
   # Notify on completion
   notify:
     runs-on: ubuntu-latest
-    needs: [build-image, release-charts, update-index]
+    needs: [build-image, release-charts]
     if: always()
     steps:
       - name: Notification
         run: |
-          if [[ "${{ needs.build-image.result }}" == "success" && "${{ needs.release-charts.result }}" == "success" && "${{ needs.update-index.result }}" == "success" ]]; then
+          if [[ "${{ needs.build-image.result }}" == "success" && "${{ needs.release-charts.result }}" == "success" ]]; then
             echo "✅ Build and publish completed successfully!"
             echo "🚀 Docker image: ${{ needs.build-image.outputs.image-tag }}"
             echo "📦 Helm charts published to GitHub Pages"
