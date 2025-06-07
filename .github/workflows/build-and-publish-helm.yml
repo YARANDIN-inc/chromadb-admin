@@ -209,10 +209,10 @@ jobs:
     steps:
       - name: Notification
         run: |
-          if [[ "${{ needs.build-image.result }}" == "success" && "${{ needs.release-charts.result }}" == "success" ]]; then
+          if [[ "${{ needs.release-charts.result }}" == "success" ]]; then
             echo "✅ Build and publish of Helm charts completed successfully!"
             echo "📦 Helm charts published to GitHub Pages"
-          elif [[ "${{ needs.build-image.result }}" == "success" && "${{ github.event_name }}" == "pull_request" ]]; then
+          elif [["${{ github.event_name }}" == "pull_request" ]]; then
             echo "✅ PR build completed successfully!"
           else
             echo "❌ Build or publish failed!"
