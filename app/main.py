@@ -104,8 +104,7 @@ async def create_initial_admin():
         
         print(f"✅ Initial super admin user '{settings.INITIAL_ADMIN_USERNAME}' created successfully!")
         print(f"   Email: {settings.INITIAL_ADMIN_EMAIL}")
-        print(f"   You can now login at http://localhost:8080/auth/login")
-        
+
     except Exception as e:
         print(f"❌ Error creating initial admin user: {e}")
         db.rollback()

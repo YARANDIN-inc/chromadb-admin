@@ -23,6 +23,8 @@ class Settings:
     INITIAL_ADMIN_EMAIL: str = os.getenv("INITIAL_ADMIN_EMAIL", "")
     INITIAL_ADMIN_PASSWORD: str = os.getenv("INITIAL_ADMIN_PASSWORD", "")
     CREATE_INITIAL_ADMIN: bool = os.getenv("CREATE_INITIAL_ADMIN", "false").lower() in ("true", "1", "yes")
+
+    PASSWORD_VALIDATION_ENABLED: bool = os.getenv("PASSWORD_VALIDATION_ENABLED", "true").lower() in ("true", "1", "yes")
     
     def __post_init__(self):
         # Validate security settings

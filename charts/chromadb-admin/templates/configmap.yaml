@@ -6,6 +6,7 @@ metadata:
     {{- include "chromadb-admin.labels" . | nindent 4 }}
 data:
   CHROMADB_URL: {{ include "chromadb-admin.chromadbUrl" . | quote }}
+  PASSWORD_VALIDATION: {{ .Values.chromadbAdmin.config.passwordValidationEnabled | quote }}
   {{- if .Values.chromadbAdmin.config.initialAdmin.enabled }}
   CREATE_INITIAL_ADMIN: "true"
   INITIAL_ADMIN_USERNAME: {{ .Values.chromadbAdmin.config.initialAdmin.username | quote }}

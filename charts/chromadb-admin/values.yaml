@@ -22,18 +22,21 @@ chromadbAdmin:
   config:
     # Database URL (will be auto-generated if using internal PostgreSQL)
     databaseUrl: ""
-    # ChromaDB URL (will be auto-generated if using internal ChromaDB)
+    # (optional) ChromaDB URL (will be auto-generated if using internal ChromaDB)
     chromadbUrl: ""
     # Secret key for sessions (auto-generated if not provided)
     secretKey: ""
-    # ChromaDB authentication token
+    # (optional) ChromaDB authentication token
     chromadbToken: ""
+    # ChromaDB Admin application password validation
+    passwordValidationEnabled: true
     
     # Initial admin user configuration
     initialAdmin:
       enabled: true
       username: "admin"
       email: "admin@example.com"
+      # Password must be a valid password according to ChromaDB Admin requirements.
       password: ""  # If empty, a random password will be generated
     
     # Use existing secret instead of creating new ones

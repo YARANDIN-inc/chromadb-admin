@@ -6,6 +6,8 @@ from passlib.context import CryptContext
 import secrets
 import re
 
+from app.config import settings
+
 Base = declarative_base()
 
 # Password hashing
@@ -63,7 +65,7 @@ class User(Base):
         return pwd_context.verify(password, self.hashed_password)
     
     def set_password(self, password: str):
-        if not self.validate_password(password):
+        if settings.PASSWORD_VALIDATION_ENABLED and not self.validate_password(password):
             raise ValueError("Password does not meet security requirements")
         self.hashed_password = pwd_context.hash(password)
     
@@ -92,7 +94,7 @@ class User(Base):
         has_upper = any(c.isupper() for c in password)
         has_digit = any(c.isdigit() for c in password)
         has_special = any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in password)
-        
+
         return has_lower and has_upper and has_digit and has_special
     
     def get_instance_permissions(self, instance_id: int):
