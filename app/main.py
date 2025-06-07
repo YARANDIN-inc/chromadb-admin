@@ -57,6 +57,17 @@ def validate_csrf_token(request: Request, token: str) -> bool:
     # For now, we'll use a simple validation
     return len(token) == 43  # token_urlsafe(32) generates 43 chars
 
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for container orchestration"""
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
+@app.get("/healthz")
+async def healthz():
+    """Alternative health check endpoint (Kubernetes style)"""
+    return {"status": "ok"}
+
 @app.on_event("startup")
 async def create_initial_admin():
     """Create initial admin user from environment variables if configured"""

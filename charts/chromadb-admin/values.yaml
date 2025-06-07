@@ -67,7 +67,7 @@ chromadbAdmin:
   # Health checks
   livenessProbe:
     httpGet:
-      path: /auth/login
+      path: /healthz
       port: 8080
     initialDelaySeconds: 30
     periodSeconds: 10
@@ -76,7 +76,7 @@ chromadbAdmin:
   
   readinessProbe:
     httpGet:
-      path: /auth/login
+      path: /healthz
       port: 8080
     initialDelaySeconds: 5
     periodSeconds: 5
