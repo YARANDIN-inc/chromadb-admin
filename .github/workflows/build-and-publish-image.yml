@@ -71,7 +71,7 @@ jobs:
     steps:
       - name: Notification
         run: |
-          if [[ "${{ needs.build-image.result }}" == "success" && "${{ needs.release-charts.result }}" == "success" ]]; then
+          if [[ "${{ needs.build-image.result }}" == "success" ]]; then
             echo "✅ Build and publish of Docker images completed successfully!"
             echo "🚀 Docker image: ${{ needs.build-image.outputs.image-tag }}"
           elif [[ "${{ needs.build-image.result }}" == "success" && "${{ github.event_name }}" == "pull_request" ]]; then
