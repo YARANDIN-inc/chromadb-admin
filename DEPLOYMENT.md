@@ -443,7 +443,7 @@ chromadb:
 - [Helm Chart README](helm/chromadb-admin/README.md)
 - [Security Assessment Report](SECURITY_REPORT.md)
 - [Application README](README.md)
-- [GitHub Actions Documentation](.github/workflows/build-and-publish.yml)
+- [GitHub Actions Documentation](.github/workflows/build-and-publish-image.yml)
 
 ## 🆘 Support
 
