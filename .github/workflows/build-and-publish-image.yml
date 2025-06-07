@@ -3,8 +3,9 @@ name: Build and Publish Image Artifacts
 on:
   push:
     tags: [ 'v*' ]
-    paths:
-      - ./**/*.py
+    paths-ignore:
+      - charts/**
+      - .github
 
 env:
   REGISTRY: ghcr.io

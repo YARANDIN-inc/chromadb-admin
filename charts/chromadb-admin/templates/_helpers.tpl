@@ -149,7 +149,7 @@ Generate the ChromaDB URL
 {{- $port := .Values.chromadb.service.port }}
 {{- printf "http://%s:%v" $host $port }}
 {{- else }}
-{{- fail "ChromaDB URL must be provided when external ChromaDB is used" }}
+{{ "" }}
 {{- end }}
 {{- end }}
 
