@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+
+{% block title %}ChromaDB Instances - ChromaDB Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-hdd-network"></i> ChromaDB Instances</h1>
+    {% if current_user.is_super_admin or current_user.can_admin %}
+    <button type="button" class="btn btn-primary btn-custom" data-bs-toggle="modal" data-bs-target="#createInstanceModal">
+        <i class="bi bi-plus-circle"></i> Add Instance
+    </button>
+    {% endif %}
+</div>
+
+<!-- Instances Table -->
+<div class="card">
+    <div class="card-body">
+        {% if instances %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Instance</th>
+                        <th>URL</th>
+                        <th>Status</th>
+                        <th>Collections</th>
+                        <th>Your Permissions</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for instance in instances %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {% if instance.is_default %}
+                                        <i class="bi bi-star-fill text-warning fs-4"></i>
+                                    {% else %}
+                                        <i class="bi bi-hdd-network text-primary fs-4"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ instance.name }}</div>
+                                    <small class="text-muted">{{ instance.description or "No description" }}</small>
+                                    {% if instance.is_default %}
+                                        <br><span class="badge bg-warning text-dark">Default</span>
+                                    {% endif %}
+                                    {% if not instance.is_active %}
+                                        <br><span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <code>{{ instance.url }}</code>
+                            {% if instance.token %}
+                                <br><small class="text-muted"><i class="bi bi-shield-check"></i> Authenticated</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set status = instance_status.get(instance.id, "unknown") %}
+                            {% if status == "online" %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Online
+                                </span>
+                            {% elif status == "inactive" %}
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-pause-circle"></i> Inactive
+                                </span>
+                            {% elif status == "unknown" %}
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-question-circle"></i> Unknown
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle"></i> Offline
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set collection_count = instance_collections.get(instance.id, 0) %}
+                            <span class="badge bg-primary">{{ collection_count }}</span>
+                        </td>
+                        <td>
+                            {% if current_user.is_super_admin %}
+                                <span class="badge bg-danger">Super Admin</span>
+                            {% else %}
+                                {% set perms = user_permissions.get(instance.id) %}
+                                {% if perms %}
+                                    {% if perms.can_manage %}
+                                        <span class="badge bg-warning">Manage</span>
+                                    {% endif %}
+                                    {% if perms.can_create %}
+                                        <span class="badge bg-success">Create</span>
+                                    {% endif %}
+                                    {% if perms.can_add %}
+                                        <span class="badge bg-info">Add</span>
+                                    {% endif %}
+                                    {% if perms.can_search %}
+                                        <span class="badge bg-secondary">Search</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">No access</span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                {% if user_permissions.get(instance.id) or current_user.is_super_admin %}
+                                <a href="/collections" class="btn btn-outline-primary" title="View Collections">
+                                    <i class="bi bi-collection"></i>
+                                </a>
+                                {% endif %}
+                                
+                                {% if current_user.is_super_admin or current_user.can_admin %}
+                                <button type="button" class="btn btn-outline-warning" 
+                                        onclick="editInstance({{ instance.id }}, '{{ instance.name }}', '{{ instance.url }}', '{{ instance.description or '' }}', {{ instance.is_default|lower }}, {{ instance.is_active|lower }})"
+                                        title="Edit Instance">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                
+                                <button type="button" class="btn btn-outline-info" 
+                                        onclick="managePermissions({{ instance.id }}, '{{ instance.name }}')"
+                                        title="Manage Permissions">
+                                    <i class="bi bi-people"></i>
+                                </button>
+                                
+                                <button type="button" class="btn btn-outline-success" 
+                                        onclick="testConnection({{ instance.id }})"
+                                        title="Test Connection">
+                                    <i class="bi bi-wifi"></i>
+                                </button>
+                                
+                                {% if not instance.is_default %}
+                                <button type="button" class="btn btn-outline-danger" 
+                                        onclick="deleteInstance({{ instance.id }}, '{{ instance.name }}')"
+                                        title="Delete Instance">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-hdd-network fs-1 text-muted mb-3"></i>
+            <h4 class="text-muted">No ChromaDB Instances Found</h4>
+            <p class="text-muted">Configure your first ChromaDB instance to get started.</p>
+            {% if current_user.is_super_admin or current_user.can_admin %}
+            <button type="button" class="btn btn-primary btn-custom" data-bs-toggle="modal" data-bs-target="#createInstanceModal">
+                <i class="bi bi-plus-circle"></i> Add First Instance
+            </button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Create Instance Modal -->
+{% if current_user.is_super_admin or current_user.can_admin %}
+<div class="modal fade" id="createInstanceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" action="/instances/create" onsubmit="handleCreateInstance(event)">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add ChromaDB Instance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Instance Name</label>
+                                <input type="text" class="form-control" name="name" required 
+                                       placeholder="e.g., production, development">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="url" class="form-label">URL</label>
+                                <input type="url" class="form-control" name="url" required 
+                                       placeholder="http://chromadb-service:8000">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="2" 
+                                  placeholder="Optional description for this instance"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="token" class="form-label">Authentication Token (Optional)</label>
+                        <input type="password" class="form-control" name="token" 
+                               placeholder="Bearer token for authentication">
+                        <div class="form-text">Leave empty if the instance doesn't require authentication</div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_default" value="true">
+                        <label class="form-check-label">Set as default instance</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Instance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Instance Modal -->
+<div class="modal fade" id="editInstanceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" action="/instances/update" id="editInstanceForm" onsubmit="handleUpdateInstance(event)">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="instance_id" id="editInstanceId">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil"></i> Edit ChromaDB Instance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editName" class="form-label">Instance Name</label>
+                                <input type="text" class="form-control" name="name" id="editName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editUrl" class="form-label">URL</label>
+                                <input type="url" class="form-control" name="url" id="editUrl" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDescription" class="form-label">Description</label>
+                        <textarea class="form-control" name="description" id="editDescription" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editToken" class="form-label">Authentication Token</label>
+                        <input type="password" class="form-control" name="token" id="editToken" 
+                               placeholder="Leave empty to keep current token">
+                        <div class="form-text">Leave empty to keep current token</div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="is_default" value="true" id="editIsDefault">
+                        <label class="form-check-label">Set as default instance</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_active" value="true" id="editIsActive">
+                        <label class="form-check-label">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Instance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Instance Modal -->
+<div class="modal fade" id="deleteInstanceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/instances/delete" id="deleteInstanceForm" onsubmit="handleDeleteInstance(event)">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="instance_id" id="deleteInstanceId">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle"></i> Delete Instance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete instance <strong id="deleteInstanceName"></strong>?</p>
+                    <p class="text-danger">This will remove the instance configuration and all associated data from the admin panel. The actual ChromaDB instance will not be affected.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete Instance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function editInstance(id, name, url, description, isDefault, isActive) {
+    document.getElementById('editInstanceId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editUrl').value = url;
+    document.getElementById('editDescription').value = description;
+    document.getElementById('editIsDefault').checked = isDefault;
+    document.getElementById('editIsActive').checked = isActive;
+    document.getElementById('editToken').value = '';
+    
+    const editModal = new bootstrap.Modal(document.getElementById('editInstanceModal'));
+    editModal.show();
+}
+
+function deleteInstance(id, name) {
+    document.getElementById('deleteInstanceId').value = id;
+    document.getElementById('deleteInstanceName').textContent = name;
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteInstanceModal'));
+    deleteModal.show();
+}
+
+function managePermissions(instanceId, instanceName) {
+    window.location.href = `/instances/${instanceId}/permissions`;
+}
+
+async function testConnection(instanceId) {
+    const button = event.target.closest('button');
+    const buttonId = `test-btn-${instanceId}`;
+    button.id = buttonId;
+    
+    // Find the status badge in the same row
+    const row = button.closest('tr');
+    const statusBadge = row.querySelector('td:nth-child(3) .badge');
+    
+    try {
+        asyncAPI.showLoading(buttonId);
+        button.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Testing';
+        
+        // Update status badge to show testing
+        if (statusBadge) {
+            statusBadge.className = 'badge bg-info';
+            statusBadge.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Testing';
+        }
+        
+        const result = await asyncAPI.testInstanceConnection(instanceId);
+        
+        if (result.success) {
+            button.innerHTML = '<i class="bi bi-check-circle text-success"></i> Online';
+            if (statusBadge) {
+                statusBadge.className = 'badge bg-success';
+                statusBadge.innerHTML = '<i class="bi bi-check-circle"></i> Online';
+            }
+        } else {
+            button.innerHTML = '<i class="bi bi-x-circle text-danger"></i> Failed';
+            if (statusBadge) {
+                statusBadge.className = 'badge bg-danger';
+                statusBadge.innerHTML = '<i class="bi bi-x-circle"></i> Offline';
+            }
+        }
+        
+        setTimeout(() => {
+            asyncAPI.hideLoading(buttonId);
+            button.innerHTML = '<i class="bi bi-wifi"></i>';
+        }, 3000);
+        
+    } catch (error) {
+        button.innerHTML = '<i class="bi bi-x-circle text-danger"></i> Failed';
+        if (statusBadge) {
+            statusBadge.className = 'badge bg-danger';
+            statusBadge.innerHTML = '<i class="bi bi-x-circle"></i> Offline';
+        }
+        
+        setTimeout(() => {
+            asyncAPI.hideLoading(buttonId);
+            button.innerHTML = '<i class="bi bi-wifi"></i>';
+        }, 3000);
+    }
+}
+
+// Handle create instance form submission
+async function handleCreateInstance(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    try {
+        const instanceData = {
+            name: formData.get('name'),
+            url: formData.get('url'),
+            description: formData.get('description'),
+            token: formData.get('token'),
+            is_default: formData.get('is_default') === 'true'
+        };
+        
+        await asyncAPI.createInstance(instanceData);
+        
+        // Close modal and refresh page
+        const modal = bootstrap.Modal.getInstance(document.getElementById('createInstanceModal'));
+        modal.hide();
+        
+        // Refresh the page content
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Failed to create instance:', error);
+    }
+}
+
+// Handle update instance form submission
+async function handleUpdateInstance(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    try {
+        const instanceData = {
+            instance_id: formData.get('instance_id'),
+            name: formData.get('name'),
+            url: formData.get('url'),
+            description: formData.get('description'),
+            token: formData.get('token'),
+            is_default: formData.get('is_default') === 'true',
+            is_active: formData.get('is_active') === 'true'
+        };
+        
+        await asyncAPI.updateInstance(instanceData);
+        
+        // Close modal and refresh page
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editInstanceModal'));
+        modal.hide();
+        
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Failed to update instance:', error);
+    }
+}
+
+// Handle delete instance form submission
+async function handleDeleteInstance(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    try {
+        const instanceId = formData.get('instance_id');
+        await asyncAPI.deleteInstance(instanceId);
+        
+        // Close modal and refresh page
+        const modal = bootstrap.Modal.getInstance(document.getElementById('deleteInstanceModal'));
+        modal.hide();
+        
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Failed to delete instance:', error);
+    }
+}
+</script>
+{% endblock %} 

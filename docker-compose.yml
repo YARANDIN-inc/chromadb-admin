@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: chromadb_admin
+      POSTGRES_USER: chromadb
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./.runtime/postgres:/var/lib/postgresql/data
+    networks:
+      - chromadb-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chromadb -d chromadb_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-ui:
+    image: dpage/pgadmin4
+    ports:
+      - "8083:80"
+    volumes:
+      - ./.runtime/pgadmin:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - chromadb-network
+
+  # ChromaDB Service
+  chromadb:
+    image: chromadb/chroma:1.0.12
+    ports:
+      - "8001:8000"
+    environment:
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+      - ANONYMIZED_TELEMETRY=False
+    volumes:
+      - ./.runtime/chromadb:/chroma/chroma
+    networks:
+      - chromadb-network
+
+  # Web Application
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    networks:
+      - chromadb-network
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://chromadb:password@postgres:5432/chromadb_admin
+      - CHROMADB_URL=http://chromadb:8000
+      - CHROMADB_TOKEN=1234567890-change-in-production
+      - SECRET_KEY=change-this-in-production-to-a-secure-random-string
+
+      - DOTENV_PATH=/app/.env
+
+      # Initial Admin User Configuration
+      # Set CREATE_INITIAL_ADMIN=true to automatically create an admin user on startup
+      - CREATE_INITIAL_ADMIN=true
+      - INITIAL_ADMIN_USERNAME=admin
+      - INITIAL_ADMIN_EMAIL=admin@localhost.com
+      - INITIAL_ADMIN_PASSWORD=admin123
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+    volumes:
+      - ./:/app:ro  # Mount app directory for development
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+
+volumes:
+  postgres_data:
+  chromadb_data:
+
+networks:
+  chromadb-network:
+    driver: bridge 

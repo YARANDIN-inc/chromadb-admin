@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ChromaDB Admin Panel{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            margin: 2px 0;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn-custom {
+            border-radius: 8px;
+            padding: 8px 20px;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+        }
+        .badge-custom {
+            font-size: 0.75em;
+            padding: 4px 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3 d-flex flex-column" style="height: 100vh;">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">
+                            <i class="bi bi-database"></i> ChromaDB
+                        </h4>
+                        <small class="text-white-50">Admin Panel</small>
+                        {% if current_user %}
+                        <div class="mt-2">
+                            <small class="text-white-50">Welcome, {{ current_user.username }}</small>
+                            {% if current_user.is_super_admin %}
+                                <br><span class="badge bg-danger mt-1">Super Admin</span>
+                            {% endif %}
+                            <br>
+                            <a href="/auth/logout" class="text-white-50" style="font-size: 0.8em;">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <ul class="nav flex-column flex-grow-1">
+                        {% if current_user %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == '/' %}active{% endif %}" href="/">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/instances' in request.url.path %}active{% endif %}" href="/instances">
+                                <i class="bi bi-hdd-network"></i> ChromaDB Instances
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/collections' in request.url.path and '/instances/' not in request.url.path %}active{% endif %}" href="/collections">
+                                <i class="bi bi-collection"></i> Collections
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/query' in request.url.path %}active{% endif %}" href="/query">
+                                <i class="bi bi-search"></i> Query Interface
+                            </a>
+                        </li>
+                        {% if current_user.can_admin or current_user.is_super_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/admin' in request.url.path %}active{% endif %}" href="/admin">
+                                <i class="bi bi-people"></i> User Management
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% endif %}
+                    </ul>
+                    
+                    <!-- Bottom section with permissions and footer -->
+                    <div class="mt-auto">
+                        {% if current_user %}
+                        <div class="pt-3 border-top border-light mb-3">
+                            <div class="text-white-50" style="font-size: 0.85em;">
+                                <div class="mb-2"><strong>Global Permissions:</strong></div>
+                                {% if current_user.is_super_admin %}
+                                    <div><i class="bi bi-check-circle text-success"></i> Super Admin</div>
+                                {% endif %}
+                                {% if current_user.can_admin %}
+                                    <div><i class="bi bi-check-circle text-success"></i> Admin</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Footer -->
+                        <div class="text-center text-white-50 pb-3" style="font-size: 0.75em;">
+                            Developed with ❤️ by <strong>YARANDIN</strong>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="pt-3">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Async API Library -->
+    <script src="/static/async-api.js"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

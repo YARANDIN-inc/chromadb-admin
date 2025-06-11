@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chromadb-admin.fullname" . }}-web
+  labels:
+    {{- include "chromadb-admin.chromadbAdminLabels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.chromadbAdmin.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "chromadb-admin.chromadbAdminSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.chromadbAdmin.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "chromadb-admin.chromadbAdminLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.chromadbAdmin.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "chromadb-admin.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.chromadbAdmin.podSecurityContext | nindent 8 }}
+      containers:
+        - name: chromadb-admin
+          securityContext:
+            {{- toYaml .Values.chromadbAdmin.securityContext | nindent 12 }}
+          image: {{ include "chromadb-admin.chromadbAdminImage" . }}
+          imagePullPolicy: {{ .Values.chromadbAdmin.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.chromadbAdmin.service.targetPort }}
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /.cache
+              name: cache
+          env:
+            - name: CHROMADB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chromadb-admin.fullname" . }}-config
+                  key: CHROMADB_URL
+            {{- if .Values.chromadbAdmin.config.initialAdmin.enabled }}
+            - name: CREATE_INITIAL_ADMIN
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chromadb-admin.fullname" . }}-config
+                  key: CREATE_INITIAL_ADMIN
+            - name: INITIAL_ADMIN_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chromadb-admin.fullname" . }}-config
+                  key: INITIAL_ADMIN_USERNAME
+            - name: INITIAL_ADMIN_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "chromadb-admin.fullname" . }}-config
+                  key: INITIAL_ADMIN_EMAIL
+            {{- end }}
+            {{- if .Values.chromadbAdmin.extraEnvVars }}
+            {{- toYaml .Values.chromadbAdmin.extraEnvVars | nindent 12 }}
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ include "chromadb-admin.secretName" . }}
+            {{- if .Values.chromadbAdmin.extraEnvVarsSecret }}
+            - secretRef:
+                name: {{ .Values.chromadbAdmin.extraEnvVarsSecret }}
+            {{- end }}
+            {{- if .Values.chromadbAdmin.extraEnvVarsConfigMap }}
+            - configMapRef:
+                name: {{ .Values.chromadbAdmin.extraEnvVarsConfigMap }}
+            {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.chromadbAdmin.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.chromadbAdmin.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.chromadbAdmin.resources | nindent 12 }}
+      volumes:
+        - name: cache
+          emptyDir: {}
+      {{- with .Values.chromadbAdmin.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.chromadbAdmin.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.chromadbAdmin.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }} 

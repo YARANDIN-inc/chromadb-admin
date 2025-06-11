@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Query Interface - ChromaDB Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-search"></i> Query Interface</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-search"></i> Search Documents</h5>
+            </div>
+            <div class="card-body">
+                {% if collections %}
+                <form method="post" action="/api/query/execute" onsubmit="handleQuerySubmit(event)">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" id="instance_id" name="instance_id" value="">
+                    
+                    <div class="mb-3">
+                        <label for="collection_name" class="form-label">Select Collection</label>
+                        <select class="form-select" id="collection_name" name="collection_name" required onchange="updateInstanceId()">
+                            <option value="">Choose a collection...</option>
+                            {% for collection in collections %}
+                            <option value="{{ collection.name }}" data-instance-id="{{ collection.instance_id }}">
+                                {{ collection.name }} ({{ collection.count }} documents) - {{ collection.instance_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            Collections are grouped by ChromaDB instance. The instance name is shown after the dash.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="query_text" class="form-label">Search Query</label>
+                        <textarea class="form-control" id="query_text" name="query_text" rows="3" 
+                                  placeholder="Enter your search query here..." required></textarea>
+                        <div class="form-text">
+                            Enter the text you want to search for. ChromaDB will find semantically similar documents.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="n_results" class="form-label">Number of Results</label>
+                        <select class="form-select" id="n_results" name="n_results">
+                            <option value="5">5 results</option>
+                            <option value="10" selected>10 results</option>
+                            <option value="20">20 results</option>
+                            <option value="50">50 results</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg btn-custom" id="queryButton">
+                            <i class="bi bi-search"></i> Execute Query
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-collection fs-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">No Collections Available</h4>
+                    <p class="text-muted">You need to create a collection first before you can query documents.</p>
+                    <a href="/collections" class="btn btn-primary btn-custom">
+                        <i class="bi bi-plus"></i> Create Collection
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if collections %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Query Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-lightbulb"></i> Semantic Search</h6>
+                        <p class="small text-muted">
+                            ChromaDB uses embeddings to find semantically similar content, not just exact text matches.
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-target"></i> Better Results</h6>
+                        <p class="small text-muted">
+                            Use natural language queries for better results. Describe what you're looking for conceptually.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function updateInstanceId() {
+    const collectionSelect = document.getElementById('collection_name');
+    const instanceIdInput = document.getElementById('instance_id');
+    const selectedOption = collectionSelect.options[collectionSelect.selectedIndex];
+    
+    if (selectedOption && selectedOption.value) {
+        const instanceId = selectedOption.getAttribute('data-instance-id');
+        instanceIdInput.value = instanceId;
+    } else {
+        instanceIdInput.value = '';
+    }
+}
+
+// Handle query form submission
+async function handleQuerySubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    try {
+        const queryData = {
+            collection_name: formData.get('collection_name'),
+            instance_id: formData.get('instance_id'),
+            query_text: formData.get('query_text'),
+            n_results: formData.get('n_results')
+        };
+        
+        // Show loading state
+        asyncAPI.showLoading('queryButton');
+        
+        // Execute query
+        const result = await asyncAPI.executeQuery(queryData);
+        
+        // Show results in a new section
+        displayQueryResults(result);
+        
+    } catch (error) {
+        console.error('Query failed:', error);
+    } finally {
+        asyncAPI.hideLoading('queryButton');
+    }
+}
+
+// Display query results
+function displayQueryResults(result) {
+    // Create or update results section
+    let resultsDiv = document.getElementById('queryResults');
+    if (!resultsDiv) {
+        resultsDiv = document.createElement('div');
+        resultsDiv.id = 'queryResults';
+        resultsDiv.className = 'card mt-4';
+        document.querySelector('.col-lg-8').appendChild(resultsDiv);
+    }
+    
+    // Check if the query was successful
+    if (!result.success) {
+        resultsDiv.innerHTML = `
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle text-danger"></i> Query Failed</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> ${result.error || 'Unknown error occurred'}
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    const queryInfo = `
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-list-ul"></i> Query Results</h5>
+            <small class="text-muted">
+                ${result.results.count} results in ${result.total_time_ms}ms
+            </small>
+        </div>
+    `;
+    
+    let resultsHtml = `
+        <div class="card-header">
+            ${queryInfo}
+        </div>
+        <div class="card-body">
+    `;
+    
+    // Add query information banner
+    resultsHtml += `
+        <div class="alert alert-info">
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Query:</strong> "${result.query || 'N/A'}"<br/>
+                    <strong>Collection:</strong> ${result.collection || 'N/A'}
+                </div>
+                <div class="col-md-6">
+                    <strong>Execution Time:</strong> ${result.execution_time_ms || 0}ms<br/>
+                    <strong>Total Time:</strong> ${result.total_time_ms || 0}ms
+                </div>
+            </div>
+        </div>
+    `;
+    
+    if (result.results && result.results.documents && result.results.documents.length > 0) {
+        resultsHtml += '<div class="row">';
+        
+        for (let i = 0; i < result.results.documents.length; i++) {
+            const doc = result.results.documents[i];
+            const metadata = result.results.metadatas && result.results.metadatas[i] ? result.results.metadatas[i] : {};
+            const distance = result.results.distances && result.results.distances[i] ? result.results.distances[i] : 'N/A';
+            const id = result.results.ids && result.results.ids[i] ? result.results.ids[i] : 'N/A';
+            
+            // Calculate similarity percentage (distance is typically 0-2, lower is better)
+            const similarity = distance !== 'N/A' ? Math.max(0, Math.min(100, (2 - distance) * 50)) : 0;
+            const similarityColor = similarity > 80 ? 'success' : similarity > 60 ? 'warning' : 'secondary';
+            
+            resultsHtml += `
+                <div class="col-12 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">
+                                    <span class="badge bg-light text-dark me-2">#${i + 1}</span>
+                                    Document
+                                </h6>
+                                <div class="text-end">
+                                    <small class="text-muted d-block">ID: ${id}</small>
+                                    <span class="badge bg-${similarityColor}">${similarity.toFixed(1)}% match</span>
+                                </div>
+                            </div>
+                            <p class="card-text">${doc}</p>
+                            <div class="row mt-3">
+                                <div class="col-sm-6">
+                                    <small class="text-muted">
+                                        <strong>Distance:</strong> 
+                                        <span class="font-monospace">${typeof distance === 'number' ? distance.toFixed(4) : distance}</span>
+                                    </small>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted">
+                                        <strong>Metadata:</strong> 
+                                        <span class="font-monospace">${JSON.stringify(metadata)}</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        resultsHtml += '</div>';
+    } else {
+        resultsHtml += `
+            <div class="text-center py-4">
+                <i class="bi bi-search fs-1 text-muted mb-3"></i>
+                <h5 class="text-muted">No Results Found</h5>
+                <p class="text-muted">Try adjusting your search query or check if the collection contains relevant documents.</p>
+            </div>
+        `;
+    }
+    
+    resultsHtml += '</div>';
+    resultsDiv.innerHTML = resultsHtml;
+    
+    // Scroll to results
+    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Initialize instance_id on page load if a collection is already selected
+document.addEventListener('DOMContentLoaded', function() {
+    updateInstanceId();
+});
+</script>
+{% endblock %}
+{% endblock %} 

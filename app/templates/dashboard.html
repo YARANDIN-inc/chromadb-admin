@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ChromaDB Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    {% if current_user.is_super_admin or current_user.can_admin %}
+    <a href="/instances" class="btn btn-primary btn-custom">
+        <i class="bi bi-hdd-network"></i> Manage Instances
+    </a>
+    {% endif %}
+</div>
+
+{% if no_instances %}
+<!-- No Instance Access Message -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-exclamation-triangle fs-1 text-warning mb-3"></i>
+                <h4 class="text-warning">No ChromaDB Instance Access</h4>
+                <p class="text-muted">You don't have access to any ChromaDB instances yet.</p>
+                <p class="text-muted">Please contact your administrator to grant you access to ChromaDB instances.</p>
+                {% if current_user.is_super_admin or current_user.can_admin %}
+                <div class="mt-4">
+                    <a href="/instances" class="btn btn-primary btn-custom">
+                        <i class="bi bi-hdd-network"></i> Configure Instances
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+
+<!-- Instance Access Info -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> 
+            You have access to <strong>{{ accessible_instances|length }}</strong> ChromaDB instance(s): 
+            {% for instance in accessible_instances %}
+                <span class="badge bg-primary">{{ instance.name }}</span>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_collections }}</h4>
+                        <p class="card-text">Collections</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-collection fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_documents }}</h4>
+                        <p class="card-text">Documents</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-file-text fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ accessible_instances|length }}</h4>
+                        <p class="card-text">Instances</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-hdd-network fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ recent_queries|length }}</h4>
+                        <p class="card-text">Recent Queries</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-search fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Collections Overview -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-collection"></i> Collections Overview</h5>
+                <a href="/collections" class="btn btn-primary btn-sm btn-custom">
+                    <i class="bi bi-eye"></i> View All
+                </a>
+            </div>
+            <div class="card-body">
+                {% if collections %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Instance</th>
+                                    <th>Documents</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for collection in collections[:5] %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ collection.name }}</strong>
+                                        {% if collection.metadata %}
+                                            <br><small class="text-muted">{{ collection.metadata|length }} metadata fields</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ collection.instance_name }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary badge-custom">{{ collection.count }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="/collections/{{ collection.name }}?instance_id={{ collection.instance_id }}" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if collections|length > 5 %}
+                    <div class="text-center mt-3">
+                        <a href="/collections" class="btn btn-outline-primary">View All {{ total_collections }} Collections</a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-collection fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No collections found</p>
+                        <a href="/collections" class="btn btn-primary btn-custom">
+                            <i class="bi bi-plus"></i> Create First Collection
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_queries %}
+                    <div class="list-group list-group-flush">
+                        {% for query in recent_queries %}
+                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">{{ query.query_type|title }} on {{ query.collection_name }}</div>
+                                <small class="text-muted">{{ query.query_text[:50] }}{% if query.query_text|length > 50 %}...{% endif %}</small>
+                                <br>
+                                <small class="text-muted">
+                                    {{ query.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                    {% if query.user %}
+                                        by {{ query.user.username }}
+                                    {% endif %}
+                                    {% if query.instance %}
+                                        on {{ query.instance.name }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">{{ query.results_count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-clock-history fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No recent activity</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="/instances" class="btn btn-outline-primary w-100 btn-custom">
+                            <i class="bi bi-hdd-network"></i><br>
+                            View Instances
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="/collections" class="btn btn-outline-success w-100 btn-custom">
+                            <i class="bi bi-collection"></i><br>
+                            Browse Collections
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="/query" class="btn btn-outline-info w-100 btn-custom">
+                            <i class="bi bi-search"></i><br>
+                            Search Documents
+                        </a>
+                    </div>
+                    {% if current_user.is_super_admin or current_user.can_admin %}
+                    <div class="col-md-3 mb-3">
+                        <a href="/admin" class="btn btn-outline-warning w-100 btn-custom">
+                            <i class="bi bi-people"></i><br>
+                            User Management
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %} 

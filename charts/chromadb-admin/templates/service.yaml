@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "chromadb-admin.fullname" . }}-web
+  labels:
+    {{- include "chromadb-admin.chromadbAdminLabels" . | nindent 4 }}
+  {{- with .Values.chromadbAdmin.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.chromadbAdmin.service.type }}
+  ports:
+    - port: {{ .Values.chromadbAdmin.service.port }}
+      targetPort: {{ .Values.chromadbAdmin.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "chromadb-admin.chromadbAdminSelectorLabels" . | nindent 4 }} 

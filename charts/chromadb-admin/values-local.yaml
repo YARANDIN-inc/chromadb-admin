@@ -1,0 +1,74 @@
+# Local development values for ChromaDB Admin
+# Optimized for local testing with minimal resource requirements
+
+chromadbAdmin:
+  replicaCount: 1
+  image:
+    repository: chromadb-admin
+    tag: local
+    pullPolicy: Never
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  config:
+    initialAdmin:
+      enabled: true
+      username: "admin"
+      email: "admin@local.dev"
+      # Password will be auto-generated
+
+chromadb:
+  enabled: true
+  replicaCount: 1
+  
+  persistence:
+    enabled: true
+    size: 1Gi
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+postgresql:
+  enabled: true
+  auth:
+    database: "chromadb_admin"
+    username: "chromadb"
+    # Password will be auto-generated
+  
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi
+    
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+# Disable features not needed for local development
+ingress:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+monitoring:
+  serviceMonitor:
+    enabled: false
+
+networkPolicy:
+  enabled: false 

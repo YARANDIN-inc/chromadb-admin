@@ -1,0 +1,220 @@
+name: Build and Publish Helm Charts
+
+on:
+  push:
+    tags: [ 'v*' ]
+    paths:
+      - charts/**
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Lint and test Helm charts
+  helm-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.14.0'
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+
+      - name: Lint Helm charts
+        run: |
+          for chart in charts/*/; do
+            if [ -f "$chart/Chart.yaml" ]; then
+              echo "Linting chart: $chart"
+              cd "$chart"
+              helm dependency update
+              helm lint .
+              helm template test . --debug > /dev/null
+              cd - > /dev/null
+            fi
+          done
+
+  # Release Helm charts (only on tags)
+  release-charts:
+    runs-on: ubuntu-latest
+    needs: [helm-lint]
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: github-pages
+    permissions:
+      contents: write
+      packages: write
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.VERSION_BUMPER_APPID }}
+          private-key: ${{ secrets.VERSION_BUMPER_SECRET }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: "${{ steps.app-token.outputs.token }}"
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.14.0'
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+
+      - name: Update chart versions and package
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Updating charts to version: $VERSION"
+          
+          # Create directory for packaged charts
+          mkdir -p .packaged-charts
+          
+          for chart in charts/*/; do
+            if [ -f "$chart/Chart.yaml" ]; then
+              echo "Processing chart: $chart"
+              cd "$chart"
+              
+              # Update dependencies
+              helm dependency update
+              
+              # Update chart version
+              sed -i "s/^version: .*/version: $VERSION/" Chart.yaml
+              
+              # Update appVersion to match the release tag
+              sed -i "s/^appVersion: .*/appVersion: \"$VERSION\"/" Chart.yaml
+              
+              # Package the chart
+              helm package . --destination ../../.packaged-charts
+              
+              cd - > /dev/null
+            fi
+          done
+          
+          echo "Packaged charts:"
+          ls -la .packaged-charts/
+
+      - name: Deploy to GitHub Pages
+        run: |
+          # Switch to gh-pages branch
+          git checkout gh-pages || git checkout --orphan gh-pages
+          
+          # If branch exists remotely, pull latest changes
+          if git ls-remote --exit-code origin gh-pages; then
+            git pull origin gh-pages || true
+          fi
+          
+          # Clean the branch but keep .git and any existing files we want to preserve
+          find . -maxdepth 1 ! -name '.git' ! -name '.packaged-charts' ! -name '.' -exec rm -rf {} + || true
+          
+          # Copy packaged charts
+          cp .packaged-charts/*.tgz . || true
+          
+          # Create index.yaml from packaged charts
+          helm repo index . --url https://yarandin-inc.github.io/${{ github.event.repository.name }}
+          
+          # Create a simple index.html for the repository
+          cat > index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>ChromaDB Admin Helm Charts</title>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 40px; }
+                  .container { max-width: 800px; margin: 0 auto; }
+                  .header { border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+                  .usage { background: #f6f8fa; padding: 20px; border-radius: 6px; }
+                  code { background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: 'SFMono-Regular', Consolas, monospace; }
+                  pre { background: #f6f8fa; padding: 16px; border-radius: 6px; overflow-x: auto; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>ChromaDB Admin Helm Charts</h1>
+                      <p>Kubernetes Helm charts for ChromaDB Admin</p>
+                  </div>
+                  
+                  <h2>Usage</h2>
+                  <div class="usage">
+                      <p>Add this Helm repository:</p>
+                      <pre><code>helm repo add chromadb-admin https://yarandin-inc.github.io/${{ github.event.repository.name }}
+          helm repo update</code></pre>
+                      
+                      <p>Install a chart:</p>
+                      <pre><code>helm install my-chromadb-admin chromadb-admin/chromadb-admin</code></pre>
+                  </div>
+                  
+                  <h2>Available Charts</h2>
+                  <p>See the <a href="index.yaml">repository index</a> for available charts and versions.</p>
+                  
+                  <h2>Source Code</h2>
+                  <p>Charts source code is available at <a href="https://github.com/${{ github.repository }}">GitHub</a>.</p>
+              </div>
+          </body>
+          </html>
+          EOF
+          
+          # Add and commit only if there are changes
+          git add .
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Deploy Helm charts for ${{ github.ref_name }}"
+            git push origin gh-pages
+          fi
+
+#      - name: Setup Pages
+#        uses: actions/configure-pages@v4
+#
+#      - name: Upload artifact
+#        uses: actions/upload-pages-artifact@v3
+#        with:
+#          path: '.'
+#
+#      - name: Deploy to GitHub Pages
+#        id: deployment
+#        uses: actions/deploy-pages@v4
+#        with:
+#          token: "${{ steps.app-token.outputs.token }}"
+
+  # Notify on completion
+  notify:
+    runs-on: ubuntu-latest
+    needs: [release-charts]
+    if: always()
+    steps:
+      - name: Notification
+        run: |
+          if [[ "${{ needs.release-charts.result }}" == "success" ]]; then
+            echo "✅ Build and publish of Helm charts completed successfully!"
+            echo "📦 Helm charts published to GitHub Pages"
+          elif [["${{ github.event_name }}" == "pull_request" ]]; then
+            echo "✅ PR build completed successfully!"
+          else
+            echo "❌ Build or publish failed!"
+            exit 1
+          fi

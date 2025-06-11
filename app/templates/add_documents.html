@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Add Documents - {{ collection_name }} - ChromaDB Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2"><i class="bi bi-file-plus"></i> Add Documents</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/collections">Collections</a></li>
+                <li class="breadcrumb-item"><a href="/collections/{{ collection_name }}?instance_id={{ instance_id }}">{{ collection_name }}</a></li>
+                <li class="breadcrumb-item active">Add Documents</li>
+            </ol>
+        </nav>
+    </div>
+    <a href="/collections/{{ collection_name }}?instance_id={{ instance_id }}" class="btn btn-outline-secondary btn-custom">
+        <i class="bi bi-arrow-left"></i> Back to Collection
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-plus"></i> Add Documents to {{ collection_name }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="/add-documents/{{ collection_name }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="instance_id" value="{{ instance_id }}">
+                    
+                    <!-- Processing Mode Selection -->
+                    <div class="mb-4">
+                        <label class="form-label">Processing Mode</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="processing_mode" id="mode_lines" value="lines" checked onchange="toggleProcessingMode()">
+                            <label class="form-check-label" for="mode_lines">
+                                <strong>Line-by-Line</strong> - Each line is a separate document
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="processing_mode" id="mode_split" value="split" onchange="toggleProcessingMode()">
+                            <label class="form-check-label" for="mode_split">
+                                <strong>Text Splitting</strong> - Automatically split large documents into chunks using LangChain
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Splitting Options (hidden by default) -->
+                    <div id="splittingOptions" style="display: none;">
+                        <div class="card bg-light mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="bi bi-scissors"></i> Text Splitting Configuration</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="splitter_type" class="form-label">Splitter Type</label>
+                                            <select class="form-select" id="splitter_type" name="splitter_type">
+                                                {% for key, value in available_splitters.items() %}
+                                                <option value="{{ key }}" {% if key == 'recursive' %}selected{% endif %}>{{ value }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <div class="form-text">
+                                                Recursive Character Splitter is recommended for most text documents.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="chunk_size" class="form-label">Chunk Size</label>
+                                            <input type="number" class="form-control" id="chunk_size" name="chunk_size" value="1000" min="100" max="4000" onchange="updateEstimate()">
+                                            <div class="form-text">Characters per chunk</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="chunk_overlap" class="form-label">Chunk Overlap</label>
+                                            <input type="number" class="form-control" id="chunk_overlap" name="chunk_overlap" value="200" min="0" max="500" onchange="updateEstimate()">
+                                            <div class="form-text">Overlap between chunks</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info">
+                                    <small>
+                                        <i class="bi bi-info-circle"></i> 
+                                        <strong>Estimated chunks:</strong> <span id="chunkEstimate">Will be calculated based on your input</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="documents" class="form-label">Documents <span class="text-danger">*</span></label>
+                        <div id="documentsHelp" class="form-text mb-2">
+                            <span id="linesHelp">Enter one document per line. These will be embedded and stored in ChromaDB.</span>
+                            <span id="splitHelp" style="display: none;">
+                                Paste your large document(s) here. Use <code>---DOCUMENT---</code> on a new line to separate multiple documents. 
+                                Each document will be automatically split into smaller chunks.
+                            </span>
+                        </div>
+                        <textarea class="form-control" id="documents" name="documents" rows="12" 
+                                  placeholder="Enter your documents here..." required onkeyup="updateEstimate()"></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="ids" class="form-label">Document IDs (Optional)</label>
+                        <textarea class="form-control" id="ids" name="ids" rows="3" 
+                                  placeholder="Enter one ID per line (must match number of documents)..."></textarea>
+                        <div class="form-text" id="idsHelp">
+                            <span id="idsLinesHelp">Optional: Provide custom IDs for your documents. If not provided, UUIDs will be generated automatically.</span>
+                            <span id="idsSplitHelp" style="display: none;">Optional: Provide base IDs for your source documents. Chunk IDs will be generated as baseId_chunk_0, baseId_chunk_1, etc.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="metadatas" class="form-label">Metadata (Optional)</label>
+                        <textarea class="form-control" id="metadatas" name="metadatas" rows="3" 
+                                  placeholder='{"category": "example", "source": "web"}&#10;{"category": "test", "source": "manual"}'></textarea>
+                        <div class="form-text" id="metadataHelp">
+                            <span id="metadataLinesHelp">Optional: Provide metadata for each document as JSON objects, one per line.</span>
+                            <span id="metadataSplitHelp" style="display: none;">Optional: Provide base metadata for your source documents. Additional splitting metadata will be added automatically.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/collections/{{ collection_name }}?instance_id={{ instance_id }}" class="btn btn-secondary btn-custom me-md-2">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-custom">
+                            <i class="bi bi-file-plus"></i> Add Documents
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Document Processing Guide</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-list-ol"></i> Line-by-Line Mode</h6>
+                        <ul class="small text-muted">
+                            <li>Each line becomes a separate document</li>
+                            <li>Good for lists, short texts, or pre-chunked content</li>
+                            <li>Direct control over document boundaries</li>
+                            <li>Metadata and IDs must match line count</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-scissors"></i> Text Splitting Mode</h6>
+                        <ul class="small text-muted">
+                            <li>Automatically splits large documents into optimal chunks</li>
+                            <li>Perfect for articles, books, documentation</li>
+                            <li>Preserves context with configurable overlap</li>
+                            <li>Adds splitting metadata automatically</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6><i class="bi bi-lightbulb"></i> Text Splitting Tips</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Chunk Size:</strong>
+                            <p class="small text-muted">1000-1500 characters work well for most use cases. Smaller for precise search, larger for context.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Overlap:</strong>
+                            <p class="small text-muted">200-300 characters overlap helps maintain context between chunks.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Splitter Types:</strong>
+                            <p class="small text-muted">Use language-specific splitters for code, markdown splitter for documentation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function toggleProcessingMode() {
+    const linesMode = document.getElementById('mode_lines').checked;
+    const splittingOptions = document.getElementById('splittingOptions');
+    
+    // Show/hide splitting options
+    if (linesMode) {
+        splittingOptions.style.display = 'none';
+        document.getElementById('linesHelp').style.display = 'inline';
+        document.getElementById('splitHelp').style.display = 'none';
+        document.getElementById('idsLinesHelp').style.display = 'inline';
+        document.getElementById('idsSplitHelp').style.display = 'none';
+        document.getElementById('metadataLinesHelp').style.display = 'inline';
+        document.getElementById('metadataSplitHelp').style.display = 'none';
+        
+        // Update placeholder
+        document.getElementById('documents').placeholder = 'Enter one document per line...';
+    } else {
+        splittingOptions.style.display = 'block';
+        document.getElementById('linesHelp').style.display = 'none';
+        document.getElementById('splitHelp').style.display = 'inline';
+        document.getElementById('idsLinesHelp').style.display = 'none';
+        document.getElementById('idsSplitHelp').style.display = 'inline';
+        document.getElementById('metadataLinesHelp').style.display = 'none';
+        document.getElementById('metadataSplitHelp').style.display = 'inline';
+        
+        // Update placeholder
+        document.getElementById('documents').placeholder = 'Paste your large document here. Use ---DOCUMENT--- to separate multiple documents...';
+    }
+    
+    updateEstimate();
+}
+
+function updateEstimate() {
+    const splitMode = document.getElementById('mode_split').checked;
+    const chunkEstimate = document.getElementById('chunkEstimate');
+    
+    if (!splitMode) {
+        chunkEstimate.textContent = 'Not applicable in line-by-line mode';
+        return;
+    }
+    
+    const documents = document.getElementById('documents').value;
+    const chunkSize = parseInt(document.getElementById('chunk_size').value) || 1000;
+    const chunkOverlap = parseInt(document.getElementById('chunk_overlap').value) || 200;
+    
+    if (!documents.trim()) {
+        chunkEstimate.textContent = 'Enter text to see estimate';
+        return;
+    }
+    
+    // Simple estimation
+    const totalLength = documents.length;
+    const effectiveChunkSize = chunkSize - chunkOverlap;
+    let estimatedChunks = 1;
+    
+    if (totalLength > chunkSize) {
+        estimatedChunks = Math.ceil((totalLength - chunkOverlap) / effectiveChunkSize);
+    }
+    
+    chunkEstimate.textContent = `Approximately ${estimatedChunks} chunks from ${totalLength} characters`;
+}
+
+// Auto-sync number of lines between documents and metadata in line mode
+document.getElementById('documents').addEventListener('input', function() {
+    const linesMode = document.getElementById('mode_lines').checked;
+    if (linesMode) {
+        const documentLines = this.value.split('\n').filter(line => line.trim() !== '').length;
+        const idsTextarea = document.getElementById('ids');
+        const metadatasTextarea = document.getElementById('metadatas');
+        
+        // Update placeholders with line counts
+        idsTextarea.placeholder = `Enter one ID per line (${documentLines} documents)...`;
+        metadatasTextarea.placeholder = `Enter one JSON object per line (${documentLines} documents)...`;
+    }
+    
+    updateEstimate();
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleProcessingMode();
+});
+</script>
+{% endblock %}
+{% endblock %} 

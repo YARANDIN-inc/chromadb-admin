@@ -1,0 +1,8 @@
+# Chart Releaser configuration
+owner: 'yarandin-inc'
+git-repo: 'chromadb-admin'
+charts-repo-url: 'https://yarandin-inc.github.io/chromadb-admin'
+skip-existing: true
+package-path: '.cr-release-packages'
+index-path: '.cr-index'
+release-name-template: '{{ .Name }}-{{ .Version }}' 

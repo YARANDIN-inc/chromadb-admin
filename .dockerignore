@@ -1,0 +1,6 @@
+.github/
+.idea/
+.runtime/
+.venv/
+htmlcov/
+.pytest_cache/

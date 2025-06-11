@@ -1,0 +1,204 @@
+# Production values for ChromaDB Admin
+# Optimized for high availability and performance
+
+chromadbAdmin:
+  replicaCount: 5
+  image:
+    repository: ghcr.io/yourusername/chromadb-admin
+    tag: "" # Will use chart appVersion
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  
+  config:
+    # These should be set via environment variables or external secrets
+    # secretKey: ""  # Set via SECRET_KEY env var
+    # csrfKey: ""  # Set via CSRF_SECRET_KEY env var
+    # chromadbToken: ""  # Set via CHROMADB_TOKEN env var
+
+    initialAdmin:
+      enabled: true
+      username: "admin"
+      email: "admin@yourcompany.com"
+      # password: ""  # Set via INITIAL_ADMIN_PASSWORD env var
+  
+  # Production security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+  
+  podSecurityContext:
+    fsGroup: 65534
+    seccompProfile:
+      type: RuntimeDefault
+
+chromadb:
+  enabled: true
+  replicaCount: 3  # Multiple replicas for HA
+  
+  persistence:
+    enabled: true
+    size: 100Gi
+    storageClass: "fast-ssd"  # Use high-performance storage
+  
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+  
+  # Production security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  
+  # Anti-affinity for HA
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/component
+                  operator: In
+                  values:
+                    - chromadb
+            topologyKey: kubernetes.io/hostname
+
+postgresql:
+  enabled: true
+  auth:
+    database: "chromadb_admin"
+    username: "chromadb"
+    # Passwords should be set via external secrets
+  
+  primary:
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClass: "fast-ssd"
+    
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+    
+    # Enable backup and monitoring
+    initdb:
+      scripts:
+        backup_config.sh: |
+          #!/bin/bash
+          echo "Setting up backup configuration..."
+  
+  # Enable metrics for monitoring
+  metrics:
+    enabled: true
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+# Production ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+  hosts:
+    - host: chromadb-admin.yourcompany.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: chromadb-admin-tls
+      hosts:
+        - chromadb-admin.yourcompany.com
+
+# Enable autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Enable Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Enable monitoring
+monitoring:
+  serviceMonitor:
+    enabled: true
+    interval: "30s"
+    scrapeTimeout: "10s"
+    namespace: "monitoring"
+    labels:
+      prometheus: kube-prometheus
+
+# Enable network policies for security
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: chromadb
+      ports:
+        - protocol: TCP
+          port: 8000
+
+# Service account with minimal permissions
+serviceAccount:
+  create: true
+  annotations:
+    # Add annotations for workload identity if using cloud providers
+    # iam.gke.io/gcp-service-account: chromadb-admin@project.iam.gserviceaccount.com

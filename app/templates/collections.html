@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Collections - ChromaDB Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="bi bi-collection"></i> Collections</h1>
+    {% if instances %}
+    <button type="button" class="btn btn-primary btn-custom" data-bs-toggle="modal" data-bs-target="#createCollectionModal">
+        <i class="bi bi-plus"></i> Create Collection
+    </button>
+    {% endif %}
+</div>
+
+{% if not instances %}
+<!-- No Instance Access Message -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-exclamation-triangle fs-1 text-warning mb-3"></i>
+                <h4 class="text-warning">No ChromaDB Instance Access</h4>
+                <p class="text-muted">You don't have access to any ChromaDB instances.</p>
+                <p class="text-muted">Please contact your administrator to grant you access to ChromaDB instances.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif collections %}
+<div class="row">
+    {% for collection in collections %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">{{ collection.name }}</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/collections/{{ collection.name }}?instance_id={{ collection.instance_id }}">
+                                <i class="bi bi-eye"></i> View Details
+                            </a></li>
+                            {% if current_user.is_super_admin or current_user.has_instance_permission(collection.instance_id, "add") %}
+                            <li><a class="dropdown-item" href="/add-documents/{{ collection.name }}?instance_id={{ collection.instance_id }}">
+                                <i class="bi bi-file-plus"></i> Add Documents
+                            </a></li>
+                            {% endif %}
+                            {% if current_user.is_super_admin or current_user.has_instance_permission(collection.instance_id, "create") %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button type="button" class="dropdown-item text-danger" 
+                                        onclick="deleteCollectionAsync('{{ collection.name }}', {{ collection.instance_id }})">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Instance Badge -->
+                <div class="mb-3">
+                    <span class="badge bg-secondary">{{ collection.instance_name }}</span>
+                    <span class="badge bg-primary badge-custom">{{ collection.count }} documents</span>
+                    {% if collection.metadata %}
+                        <span class="badge bg-info badge-custom">{{ collection.metadata|length }} metadata fields</span>
+                    {% endif %}
+                </div>
+                
+                {% if collection.metadata %}
+                <div class="mb-3">
+                    <small class="text-muted">Metadata:</small>
+                    <div class="mt-1">
+                        {% for key, value in collection.metadata.items() %}
+                            <small class="badge bg-light text-dark me-1">{{ key }}: {{ value }}</small>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="d-grid gap-2">
+                    <a href="/collections/{{ collection.name }}?instance_id={{ collection.instance_id }}" class="btn btn-outline-primary btn-sm btn-custom">
+                        <i class="bi bi-eye"></i> View Collection
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-collection fs-1 text-muted mb-3"></i>
+                <h4 class="text-muted">No Collections Found</h4>
+                <p class="text-muted">Create your first collection to get started with ChromaDB.</p>
+                {% if instances %}
+                <button type="button" class="btn btn-primary btn-custom" data-bs-toggle="modal" data-bs-target="#createCollectionModal">
+                    <i class="bi bi-plus"></i> Create First Collection
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Create Collection Modal -->
+{% if instances %}
+<div class="modal fade" id="createCollectionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/api/collections/create" onsubmit="handleCreateCollection(event)">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Create New Collection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="instanceSelect" class="form-label">ChromaDB Instance</label>
+                        <select class="form-select" id="instanceSelect" name="instance_id" required>
+                            <option value="">Select an instance...</option>
+                            {% for instance in instances %}
+                                {% if current_user.is_super_admin or current_user.has_instance_permission(instance.id, "create") %}
+                                <option value="{{ instance.id }}">{{ instance.name }} - {{ instance.url }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Choose which ChromaDB instance to create the collection in</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="collectionName" class="form-label">Collection Name</label>
+                        <input type="text" class="form-control" id="collectionName" name="name" required>
+                        <div class="form-text">Enter a unique name for your collection</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="collectionMetadata" class="form-label">Metadata (Optional)</label>
+                        <textarea class="form-control" id="collectionMetadata" name="metadata" rows="3" 
+                                  placeholder='{"description": "My collection", "category": "documents"}'></textarea>
+                        <div class="form-text">Enter metadata as JSON format</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-custom">
+                        <i class="bi bi-plus"></i> Create Collection
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Handle create collection form submission
+async function handleCreateCollection(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    try {
+        const name = formData.get('name');
+        const instance_id = formData.get('instance_id');
+        const metadata = formData.get('metadata') || '{}';
+        const csrf_token = formData.get('csrf_token');
+        
+        // Validation
+        if (!name) {
+            alert('Please enter a collection name.');
+            return;
+        }
+        if (!instance_id) {
+            alert('Please select an instance.');
+            return;
+        }
+        if (!csrf_token) {
+            alert('CSRF token missing. Please refresh the page.');
+            return;
+        }
+        
+        const collectionData = {
+            name: name,
+            instance_id: instance_id,
+            metadata: metadata,
+            csrf_token: csrf_token
+        };
+        
+        // Debug: Log the data being sent
+        console.log('Form data being sent:', collectionData);
+        
+        await asyncAPI.createCollection(collectionData);
+        
+        // Close modal and refresh page
+        const modal = bootstrap.Modal.getInstance(document.getElementById('createCollectionModal'));
+        modal.hide();
+        
+        // Clear form
+        form.reset();
+        
+        // Refresh the page content
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Failed to create collection:', error);
+    }
+}
+
+// Delete collection with confirmation
+async function deleteCollectionAsync(collectionName, instanceId) {
+    if (!confirm(`Are you sure you want to delete the collection "${collectionName}"?`)) {
+        return;
+    }
+    
+    try {
+        await asyncAPI.deleteCollection(collectionName, instanceId);
+        
+        // Refresh the page content
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Failed to delete collection:', error);
+    }
+}
+</script>
+{% endblock %} 
