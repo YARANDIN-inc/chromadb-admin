@@ -16,7 +16,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.13.0
-    created: "2025-06-11T13:47:08.501489166Z"
+    created: "2025-06-12T20:28:06.467259999Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -57,7 +57,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.13.0
-    created: "2025-06-11T13:47:08.356470101Z"
+    created: "2025-06-12T20:28:06.309166132Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -98,48 +98,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.12.3
-    created: "2025-06-11T13:47:08.35048978Z"
-    dependencies:
-    - condition: postgresql.enabled
-      name: postgresql
-      repository: https://charts.bitnami.com/bitnami
-      version: 16.7.10
-    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
-      interface for ChromaDB
-    digest: d9f15ab899866e91d997e083fadaa05f14aa61ed090975fd0f8d8068edf91ac7
-    home: https://github.com/yarandin-inc/chromadb-admin
-    keywords:
-    - chromadb
-    - admin
-    - vector-database
-    - machine-learning
-    - fastapi
-    maintainers:
-    - email: max@yarandin-inc.com
-      name: Max
-    name: chromadb-admin
-    sources:
-    - https://github.com/yarandin-inc/chromadb-admin
-    type: application
-    urls:
-    - https://yarandin-inc.github.io/chromadb-admin/chromadb-admin-2.12.3.tgz
-    version: 2.12.3
-  - annotations:
-      artifacthub.io/category: machine-learning
-      artifacthub.io/containsSecurityUpdates: "true"
-      artifacthub.io/images: |
-        - name: chromadb-admin
-          image: ghcr.io/yarandin-inc/chromadb-admin:latest
-        - name: chromadb
-          image: chromadb/chroma:1.0.12
-        - name: postgresql
-          image: postgres:17.5-alpine
-      artifacthub.io/license: MIT
-      artifacthub.io/operator: "false"
-      artifacthub.io/prerelease: "false"
-    apiVersion: v2
-    appVersion: 2.12.3
-    created: "2025-06-11T13:47:08.496176936Z"
+    created: "2025-06-12T20:28:06.461598942Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -179,8 +138,8 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
-    appVersion: 2.12.2
-    created: "2025-06-11T13:47:08.344434913Z"
+    appVersion: 2.12.3
+    created: "2025-06-12T20:28:06.30378981Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -188,7 +147,7 @@ entries:
       version: 16.7.10
     description: A Helm chart for ChromaDB Admin Panel - A web-based administration
       interface for ChromaDB
-    digest: ba08d26283e96d40ba38b1d68c7dd109c8b6b33136dcbf5dabe0359f5434f779
+    digest: d9f15ab899866e91d997e083fadaa05f14aa61ed090975fd0f8d8068edf91ac7
     home: https://github.com/yarandin-inc/chromadb-admin
     keywords:
     - chromadb
@@ -204,8 +163,8 @@ entries:
     - https://github.com/yarandin-inc/chromadb-admin
     type: application
     urls:
-    - https://yarandin-inc.github.io/chromadb-admin/chromadb-admin-2.12.2.tgz
-    version: 2.12.2
+    - https://yarandin-inc.github.io/chromadb-admin/chromadb-admin-2.12.3.tgz
+    version: 2.12.3
   - annotations:
       artifacthub.io/category: machine-learning
       artifacthub.io/containsSecurityUpdates: "true"
@@ -221,7 +180,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.12.2
-    created: "2025-06-11T13:47:08.490219462Z"
+    created: "2025-06-12T20:28:06.455616918Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -261,8 +220,49 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
+    appVersion: 2.12.2
+    created: "2025-06-12T20:28:06.29802859Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: ba08d26283e96d40ba38b1d68c7dd109c8b6b33136dcbf5dabe0359f5434f779
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/chromadb-admin-2.12.2.tgz
+    version: 2.12.2
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
     appVersion: 2.12.1
-    created: "2025-06-11T13:47:08.339283003Z"
+    created: "2025-06-12T20:28:06.292278159Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -303,7 +303,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.12.1
-    created: "2025-06-11T13:47:08.484349379Z"
+    created: "2025-06-12T20:28:06.448965078Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -344,48 +344,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.12.0
-    created: "2025-06-11T13:47:08.333318236Z"
-    dependencies:
-    - condition: postgresql.enabled
-      name: postgresql
-      repository: https://charts.bitnami.com/bitnami
-      version: 16.7.10
-    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
-      interface for ChromaDB
-    digest: f5e9889edf4adfc21851575a406e51c612ac46f35b9182f6e55fc40754a3dd94
-    home: https://github.com/yarandin-inc/chromadb-admin
-    keywords:
-    - chromadb
-    - admin
-    - vector-database
-    - machine-learning
-    - fastapi
-    maintainers:
-    - email: max@yarandin-inc.com
-      name: Max
-    name: chromadb-admin
-    sources:
-    - https://github.com/yarandin-inc/chromadb-admin
-    type: application
-    urls:
-    - https://yarandin-inc.github.io/chromadb-admin/chromadb-admin-2.12.0.tgz
-    version: 2.12.0
-  - annotations:
-      artifacthub.io/category: machine-learning
-      artifacthub.io/containsSecurityUpdates: "true"
-      artifacthub.io/images: |
-        - name: chromadb-admin
-          image: ghcr.io/yarandin-inc/chromadb-admin:latest
-        - name: chromadb
-          image: chromadb/chroma:1.0.12
-        - name: postgresql
-          image: postgres:17.5-alpine
-      artifacthub.io/license: MIT
-      artifacthub.io/operator: "false"
-      artifacthub.io/prerelease: "false"
-    apiVersion: v2
-    appVersion: 2.12.0
-    created: "2025-06-11T13:47:08.479234818Z"
+    created: "2025-06-12T20:28:06.442643375Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -425,8 +384,49 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
+    appVersion: 2.12.0
+    created: "2025-06-12T20:28:06.286410344Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: f5e9889edf4adfc21851575a406e51c612ac46f35b9182f6e55fc40754a3dd94
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/chromadb-admin-2.12.0.tgz
+    version: 2.12.0
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
     appVersion: 2.11.2
-    created: "2025-06-11T13:47:08.327644953Z"
+    created: "2025-06-12T20:28:06.281199174Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -467,7 +467,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.11.2
-    created: "2025-06-11T13:47:08.47326222Z"
+    created: "2025-06-12T20:28:06.436760663Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -508,7 +508,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.11.1
-    created: "2025-06-11T13:47:08.321855985Z"
+    created: "2025-06-12T20:28:06.275012312Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -549,7 +549,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.11.1
-    created: "2025-06-11T13:47:08.467391859Z"
+    created: "2025-06-12T20:28:06.43083758Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -590,48 +590,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.11.0
-    created: "2025-06-11T13:47:08.461626812Z"
-    dependencies:
-    - condition: postgresql.enabled
-      name: postgresql
-      repository: https://charts.bitnami.com/bitnami
-      version: 16.7.10
-    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
-      interface for ChromaDB
-    digest: 2dcbf6ee80f331e657dbf14310ec21e94d1cab111f947f1598798502038efb11
-    home: https://github.com/yarandin-inc/chromadb-admin
-    keywords:
-    - chromadb
-    - admin
-    - vector-database
-    - machine-learning
-    - fastapi
-    maintainers:
-    - email: max@yarandin-inc.com
-      name: Max
-    name: chromadb-admin
-    sources:
-    - https://github.com/yarandin-inc/chromadb-admin
-    type: application
-    urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.11.0.tgz
-    version: 2.11.0
-  - annotations:
-      artifacthub.io/category: machine-learning
-      artifacthub.io/containsSecurityUpdates: "true"
-      artifacthub.io/images: |
-        - name: chromadb-admin
-          image: ghcr.io/yarandin-inc/chromadb-admin:latest
-        - name: chromadb
-          image: chromadb/chroma:1.0.12
-        - name: postgresql
-          image: postgres:17.5-alpine
-      artifacthub.io/license: MIT
-      artifacthub.io/operator: "false"
-      artifacthub.io/prerelease: "false"
-    apiVersion: v2
-    appVersion: 2.11.0
-    created: "2025-06-11T13:47:08.316718771Z"
+    created: "2025-06-12T20:28:06.269085031Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -671,8 +630,8 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
-    appVersion: 2.10.0
-    created: "2025-06-11T13:47:08.456496382Z"
+    appVersion: 2.11.0
+    created: "2025-06-12T20:28:06.424540711Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -680,7 +639,7 @@ entries:
       version: 16.7.10
     description: A Helm chart for ChromaDB Admin Panel - A web-based administration
       interface for ChromaDB
-    digest: c2668cb3e68f026456cb7bef5063a17d00064ce9db4f3a02e96714f72fab0409
+    digest: 2dcbf6ee80f331e657dbf14310ec21e94d1cab111f947f1598798502038efb11
     home: https://github.com/yarandin-inc/chromadb-admin
     keywords:
     - chromadb
@@ -696,8 +655,8 @@ entries:
     - https://github.com/yarandin-inc/chromadb-admin
     type: application
     urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.10.0.tgz
-    version: 2.10.0
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.11.0.tgz
+    version: 2.11.0
   - annotations:
       artifacthub.io/category: machine-learning
       artifacthub.io/containsSecurityUpdates: "true"
@@ -713,7 +672,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.10.0
-    created: "2025-06-11T13:47:08.310716541Z"
+    created: "2025-06-12T20:28:06.263644015Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -753,8 +712,49 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
+    appVersion: 2.10.0
+    created: "2025-06-12T20:28:06.418554218Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: c2668cb3e68f026456cb7bef5063a17d00064ce9db4f3a02e96714f72fab0409
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.10.0.tgz
+    version: 2.10.0
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
     appVersion: 2.9.0
-    created: "2025-06-11T13:47:08.581259894Z"
+    created: "2025-06-12T20:28:06.548567296Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -795,7 +795,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.9.0
-    created: "2025-06-11T13:47:08.435414378Z"
+    created: "2025-06-12T20:28:06.391851628Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -836,48 +836,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.8.2
-    created: "2025-06-11T13:47:08.575564923Z"
-    dependencies:
-    - condition: postgresql.enabled
-      name: postgresql
-      repository: https://charts.bitnami.com/bitnami
-      version: 16.7.10
-    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
-      interface for ChromaDB
-    digest: 3bfb851cc821d66778f39e31aba544a61785e2bad98e0dfda68c09fd82fbf0d7
-    home: https://github.com/yarandin-inc/chromadb-admin
-    keywords:
-    - chromadb
-    - admin
-    - vector-database
-    - machine-learning
-    - fastapi
-    maintainers:
-    - email: max@yarandin-inc.com
-      name: Max
-    name: chromadb-admin
-    sources:
-    - https://github.com/yarandin-inc/chromadb-admin
-    type: application
-    urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.8.2.tgz
-    version: 2.8.2
-  - annotations:
-      artifacthub.io/category: machine-learning
-      artifacthub.io/containsSecurityUpdates: "true"
-      artifacthub.io/images: |
-        - name: chromadb-admin
-          image: ghcr.io/yarandin-inc/chromadb-admin:latest
-        - name: chromadb
-          image: chromadb/chroma:1.0.12
-        - name: postgresql
-          image: postgres:17.5-alpine
-      artifacthub.io/license: MIT
-      artifacthub.io/operator: "false"
-      artifacthub.io/prerelease: "false"
-    apiVersion: v2
-    appVersion: 2.8.2
-    created: "2025-06-11T13:47:08.429494828Z"
+    created: "2025-06-12T20:28:06.385618229Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -917,8 +876,8 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
-    appVersion: 2.8.1
-    created: "2025-06-11T13:47:08.569706132Z"
+    appVersion: 2.8.2
+    created: "2025-06-12T20:28:06.542634229Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -926,7 +885,7 @@ entries:
       version: 16.7.10
     description: A Helm chart for ChromaDB Admin Panel - A web-based administration
       interface for ChromaDB
-    digest: 1e58eb7c4b47a5b1322c13ff8b0fd541f53600a9fbe932ca4f4a01a5d6cf844d
+    digest: 3bfb851cc821d66778f39e31aba544a61785e2bad98e0dfda68c09fd82fbf0d7
     home: https://github.com/yarandin-inc/chromadb-admin
     keywords:
     - chromadb
@@ -942,8 +901,8 @@ entries:
     - https://github.com/yarandin-inc/chromadb-admin
     type: application
     urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.8.1.tgz
-    version: 2.8.1
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.8.2.tgz
+    version: 2.8.2
   - annotations:
       artifacthub.io/category: machine-learning
       artifacthub.io/containsSecurityUpdates: "true"
@@ -959,7 +918,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.8.1
-    created: "2025-06-11T13:47:08.423565505Z"
+    created: "2025-06-12T20:28:06.379211651Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -999,8 +958,8 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
-    appVersion: 2.8.0
-    created: "2025-06-11T13:47:08.564589977Z"
+    appVersion: 2.8.1
+    created: "2025-06-12T20:28:06.536710446Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1008,7 +967,7 @@ entries:
       version: 16.7.10
     description: A Helm chart for ChromaDB Admin Panel - A web-based administration
       interface for ChromaDB
-    digest: 1444d51143436e7414e7376748c61396fc30e40052b53e9de70daf7969d7df48
+    digest: 1e58eb7c4b47a5b1322c13ff8b0fd541f53600a9fbe932ca4f4a01a5d6cf844d
     home: https://github.com/yarandin-inc/chromadb-admin
     keywords:
     - chromadb
@@ -1024,8 +983,8 @@ entries:
     - https://github.com/yarandin-inc/chromadb-admin
     type: application
     urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.8.0.tgz
-    version: 2.8.0
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.8.1.tgz
+    version: 2.8.1
   - annotations:
       artifacthub.io/category: machine-learning
       artifacthub.io/containsSecurityUpdates: "true"
@@ -1041,7 +1000,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.8.0
-    created: "2025-06-11T13:47:08.417812894Z"
+    created: "2025-06-12T20:28:06.373167781Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1081,8 +1040,49 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
+    appVersion: 2.8.0
+    created: "2025-06-12T20:28:06.531468458Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: 1444d51143436e7414e7376748c61396fc30e40052b53e9de70daf7969d7df48
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.8.0.tgz
+    version: 2.8.0
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
     appVersion: 2.7.1
-    created: "2025-06-11T13:47:08.412697902Z"
+    created: "2025-06-12T20:28:06.366530656Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1123,7 +1123,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.7.1
-    created: "2025-06-11T13:47:08.558525231Z"
+    created: "2025-06-12T20:28:06.525131198Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1164,48 +1164,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.7.0
-    created: "2025-06-11T13:47:08.552534508Z"
-    dependencies:
-    - condition: postgresql.enabled
-      name: postgresql
-      repository: https://charts.bitnami.com/bitnami
-      version: 16.7.10
-    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
-      interface for ChromaDB
-    digest: e16c35b7283e9468a6a363e7c4630b13185e36ce69a28c72765cd84d75570cef
-    home: https://github.com/yarandin-inc/chromadb-admin
-    keywords:
-    - chromadb
-    - admin
-    - vector-database
-    - machine-learning
-    - fastapi
-    maintainers:
-    - email: max@yarandin-inc.com
-      name: Max
-    name: chromadb-admin
-    sources:
-    - https://github.com/yarandin-inc/chromadb-admin
-    type: application
-    urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.7.0.tgz
-    version: 2.7.0
-  - annotations:
-      artifacthub.io/category: machine-learning
-      artifacthub.io/containsSecurityUpdates: "true"
-      artifacthub.io/images: |
-        - name: chromadb-admin
-          image: ghcr.io/yarandin-inc/chromadb-admin:latest
-        - name: chromadb
-          image: chromadb/chroma:1.0.12
-        - name: postgresql
-          image: postgres:17.5-alpine
-      artifacthub.io/license: MIT
-      artifacthub.io/operator: "false"
-      artifacthub.io/prerelease: "false"
-    apiVersion: v2
-    appVersion: 2.7.0
-    created: "2025-06-11T13:47:08.406792298Z"
+    created: "2025-06-12T20:28:06.361134008Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1245,8 +1204,49 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
+    appVersion: 2.7.0
+    created: "2025-06-12T20:28:06.519196926Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: e16c35b7283e9468a6a363e7c4630b13185e36ce69a28c72765cd84d75570cef
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.7.0.tgz
+    version: 2.7.0
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
     appVersion: 2.6.1
-    created: "2025-06-11T13:47:08.400867601Z"
+    created: "2025-06-12T20:28:06.354990115Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1287,7 +1287,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.6.1
-    created: "2025-06-11T13:47:08.546729151Z"
+    created: "2025-06-12T20:28:06.513176223Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1328,48 +1328,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.6.0
-    created: "2025-06-11T13:47:08.540822941Z"
-    dependencies:
-    - condition: postgresql.enabled
-      name: postgresql
-      repository: https://charts.bitnami.com/bitnami
-      version: 16.7.10
-    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
-      interface for ChromaDB
-    digest: 3ba6067ddae529fb636a0df88bdafa4c3e34a5971b1190009c834644a10f9f5a
-    home: https://github.com/yarandin-inc/chromadb-admin
-    keywords:
-    - chromadb
-    - admin
-    - vector-database
-    - machine-learning
-    - fastapi
-    maintainers:
-    - email: max@yarandin-inc.com
-      name: Max
-    name: chromadb-admin
-    sources:
-    - https://github.com/yarandin-inc/chromadb-admin
-    type: application
-    urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.6.0.tgz
-    version: 2.6.0
-  - annotations:
-      artifacthub.io/category: machine-learning
-      artifacthub.io/containsSecurityUpdates: "true"
-      artifacthub.io/images: |
-        - name: chromadb-admin
-          image: ghcr.io/yarandin-inc/chromadb-admin:latest
-        - name: chromadb
-          image: chromadb/chroma:1.0.12
-        - name: postgresql
-          image: postgres:17.5-alpine
-      artifacthub.io/license: MIT
-      artifacthub.io/operator: "false"
-      artifacthub.io/prerelease: "false"
-    apiVersion: v2
-    appVersion: 2.6.0
-    created: "2025-06-11T13:47:08.394920682Z"
+    created: "2025-06-12T20:28:06.349240056Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1409,8 +1368,49 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
+    appVersion: 2.6.0
+    created: "2025-06-12T20:28:06.507942731Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: 3ba6067ddae529fb636a0df88bdafa4c3e34a5971b1190009c834644a10f9f5a
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.6.0.tgz
+    version: 2.6.0
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
     appVersion: 2.5.0
-    created: "2025-06-11T13:47:08.389208475Z"
+    created: "2025-06-12T20:28:06.34323541Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1451,7 +1451,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.5.0
-    created: "2025-06-11T13:47:08.535727125Z"
+    created: "2025-06-12T20:28:06.501803525Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1492,7 +1492,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.4.6
-    created: "2025-06-11T13:47:08.384016349Z"
+    created: "2025-06-12T20:28:06.33798155Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1533,7 +1533,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.4.6
-    created: "2025-06-11T13:47:08.52985618Z"
+    created: "2025-06-12T20:28:06.49569554Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1574,7 +1574,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.4.5
-    created: "2025-06-11T13:47:08.378069473Z"
+    created: "2025-06-12T20:28:06.331798876Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1615,7 +1615,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.4.5
-    created: "2025-06-11T13:47:08.523923137Z"
+    created: "2025-06-12T20:28:06.490392508Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1656,7 +1656,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.4.2
-    created: "2025-06-11T13:47:08.372406682Z"
+    created: "2025-06-12T20:28:06.325428379Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1697,7 +1697,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.4.2
-    created: "2025-06-11T13:47:08.517360179Z"
+    created: "2025-06-12T20:28:06.484052053Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1738,48 +1738,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.3.0
-    created: "2025-06-11T13:47:08.512240639Z"
-    dependencies:
-    - condition: postgresql.enabled
-      name: postgresql
-      repository: https://charts.bitnami.com/bitnami
-      version: 16.7.10
-    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
-      interface for ChromaDB
-    digest: 8f91f462b79d3a3f1aa932c15efcfe0f9e69b0860fd0b2ea94627008ec2208d1
-    home: https://github.com/yarandin-inc/chromadb-admin
-    keywords:
-    - chromadb
-    - admin
-    - vector-database
-    - machine-learning
-    - fastapi
-    maintainers:
-    - email: max@yarandin-inc.com
-      name: Max
-    name: chromadb-admin
-    sources:
-    - https://github.com/yarandin-inc/chromadb-admin
-    type: application
-    urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.3.0.tgz
-    version: 2.3.0
-  - annotations:
-      artifacthub.io/category: machine-learning
-      artifacthub.io/containsSecurityUpdates: "true"
-      artifacthub.io/images: |
-        - name: chromadb-admin
-          image: ghcr.io/yarandin-inc/chromadb-admin:latest
-        - name: chromadb
-          image: chromadb/chroma:1.0.12
-        - name: postgresql
-          image: postgres:17.5-alpine
-      artifacthub.io/license: MIT
-      artifacthub.io/operator: "false"
-      artifacthub.io/prerelease: "false"
-    apiVersion: v2
-    appVersion: 2.3.0
-    created: "2025-06-11T13:47:08.36673897Z"
+    created: "2025-06-12T20:28:06.319487816Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1819,16 +1778,16 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
-    appVersion: 2.2.0
-    created: "2025-06-11T13:47:08.506229265Z"
+    appVersion: 2.3.0
+    created: "2025-06-12T20:28:06.478182058Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
       repository: https://charts.bitnami.com/bitnami
-      version: 12.12.10
+      version: 16.7.10
     description: A Helm chart for ChromaDB Admin Panel - A web-based administration
       interface for ChromaDB
-    digest: 96c824111b9d67451e96544a3460c009efd1fed436a9e462e7534d096b0bb726
+    digest: 8f91f462b79d3a3f1aa932c15efcfe0f9e69b0860fd0b2ea94627008ec2208d1
     home: https://github.com/yarandin-inc/chromadb-admin
     keywords:
     - chromadb
@@ -1844,8 +1803,8 @@ entries:
     - https://github.com/yarandin-inc/chromadb-admin
     type: application
     urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.2.0.tgz
-    version: 2.2.0
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.3.0.tgz
+    version: 2.3.0
   - annotations:
       artifacthub.io/category: machine-learning
       artifacthub.io/containsSecurityUpdates: "true"
@@ -1861,7 +1820,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.2.0
-    created: "2025-06-11T13:47:08.361583933Z"
+    created: "2025-06-12T20:28:06.314299629Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1901,8 +1860,8 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
-    appVersion: 2.1.1
-    created: "2025-06-11T13:47:08.450595407Z"
+    appVersion: 2.2.0
+    created: "2025-06-12T20:28:06.472517699Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1910,7 +1869,7 @@ entries:
       version: 12.12.10
     description: A Helm chart for ChromaDB Admin Panel - A web-based administration
       interface for ChromaDB
-    digest: d98af0240bbc6db8bc1ec9877a120bddcfd13835dc33a451750d1dfbc10bcd11
+    digest: 96c824111b9d67451e96544a3460c009efd1fed436a9e462e7534d096b0bb726
     home: https://github.com/yarandin-inc/chromadb-admin
     keywords:
     - chromadb
@@ -1926,8 +1885,8 @@ entries:
     - https://github.com/yarandin-inc/chromadb-admin
     type: application
     urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.1.1.tgz
-    version: 2.1.1
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.2.0.tgz
+    version: 2.2.0
   - annotations:
       artifacthub.io/category: machine-learning
       artifacthub.io/containsSecurityUpdates: "true"
@@ -1943,7 +1902,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.1.1
-    created: "2025-06-11T13:47:08.304885319Z"
+    created: "2025-06-12T20:28:06.257925766Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1983,8 +1942,8 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
-    appVersion: 2.0.5
-    created: "2025-06-11T13:47:08.445654908Z"
+    appVersion: 2.1.1
+    created: "2025-06-12T20:28:06.412535296Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -1992,7 +1951,7 @@ entries:
       version: 12.12.10
     description: A Helm chart for ChromaDB Admin Panel - A web-based administration
       interface for ChromaDB
-    digest: 4d3c70b5c7dbe245dc3bf9e1833f155dbf355db5e1cb3e3b3de0469e8f2030b4
+    digest: d98af0240bbc6db8bc1ec9877a120bddcfd13835dc33a451750d1dfbc10bcd11
     home: https://github.com/yarandin-inc/chromadb-admin
     keywords:
     - chromadb
@@ -2008,8 +1967,8 @@ entries:
     - https://github.com/yarandin-inc/chromadb-admin
     type: application
     urls:
-    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.0.5.tgz
-    version: 2.0.5
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.1.1.tgz
+    version: 2.1.1
   - annotations:
       artifacthub.io/category: machine-learning
       artifacthub.io/containsSecurityUpdates: "true"
@@ -2025,7 +1984,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 2.0.5
-    created: "2025-06-11T13:47:08.300126031Z"
+    created: "2025-06-12T20:28:06.252719321Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -2065,16 +2024,16 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
-    appVersion: 1.1.0
-    created: "2025-06-11T13:47:08.295862938Z"
+    appVersion: 2.0.5
+    created: "2025-06-12T20:28:06.408182564Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
       repository: https://charts.bitnami.com/bitnami
-      version: 16.7.10
+      version: 12.12.10
     description: A Helm chart for ChromaDB Admin Panel - A web-based administration
       interface for ChromaDB
-    digest: 753ac7baddb91f366e4bbede2d97a1f4c27d19cb8bf294420f8982140af139cd
+    digest: 4d3c70b5c7dbe245dc3bf9e1833f155dbf355db5e1cb3e3b3de0469e8f2030b4
     home: https://github.com/yarandin-inc/chromadb-admin
     keywords:
     - chromadb
@@ -2090,8 +2049,90 @@ entries:
     - https://github.com/yarandin-inc/chromadb-admin
     type: application
     urls:
-    - https://yarandin-inc.github.io/chromadb-admin/chromadb-admin-1.1.0.tgz
-    version: 1.1.0
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-2.0.5.tgz
+    version: 2.0.5
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
+    appVersion: 1.2.0
+    created: "2025-06-12T20:28:06.403240353Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: 70b5c5d837ea1437e303dab7bd10f8a10dfe4ce57ecc2bc4564be18f6e4f3837
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-1.2.0.tgz
+    version: 1.2.0
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
+    appVersion: 1.2.0
+    created: "2025-06-12T20:28:06.248330652Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: 70b5c5d837ea1437e303dab7bd10f8a10dfe4ce57ecc2bc4564be18f6e4f3837
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/chromadb-admin-1.2.0.tgz
+    version: 1.2.0
   - annotations:
       artifacthub.io/category: machine-learning
       artifacthub.io/containsSecurityUpdates: "true"
@@ -2107,7 +2148,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 1.1.0
-    created: "2025-06-11T13:47:08.441444544Z"
+    created: "2025-06-12T20:28:06.397219021Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -2133,4 +2174,45 @@ entries:
     urls:
     - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-1.1.0.tgz
     version: 1.1.0
-generated: "2025-06-11T13:47:08.289650668Z"
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
+    appVersion: 1.1.0
+    created: "2025-06-12T20:28:06.241949865Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: 753ac7baddb91f366e4bbede2d97a1f4c27d19cb8bf294420f8982140af139cd
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/chromadb-admin-1.1.0.tgz
+    version: 1.1.0
+generated: "2025-06-12T20:28:06.235466748Z"
