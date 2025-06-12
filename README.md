@@ -1,3 +1,5 @@
+![Yarandin Logo](images/logo.jpg)
+
 # ChromaDB Admin Panel
 
 A comprehensive web-based administration interface for ChromaDB with user management, permissions, and beautiful UI.
