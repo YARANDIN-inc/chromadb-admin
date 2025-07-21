@@ -1,3 +1,5 @@
+# IN ACTIVE DEVELOPMENT. FOR NOW NOT INTENDED FOR PRODUCTION WORKFLOWS
+
 ![Yarandin Logo](images/logo.jpg)
 
 # ChromaDB Admin Panel
