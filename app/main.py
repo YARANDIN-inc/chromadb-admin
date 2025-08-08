@@ -1168,12 +1168,26 @@ async def add_documents(
                                     status_code=status.HTTP_302_FOUND)
                                     
         except Exception as e:
-            print(f"Error adding documents to collection '{collection_name}': {e}")
-            raise HTTPException(status_code=400, detail=f"Failed to add documents: {str(e)}")
+            print(f"❌ Error adding documents to collection '{collection_name}': {type(e).__name__}: {e}")
+            if hasattr(e, 'response') and e.response is not None:
+                print(f"🌐 HTTP Response Status: {e.response.status_code}")
+                print(f"🌐 HTTP Response Body: {e.response.text}")
+            if hasattr(e, '__dict__'):
+                print(f"🔍 Exception details: {e.__dict__}")
+            import traceback
+            print(f"📋 Full traceback:\n{traceback.format_exc()}")
+            raise HTTPException(status_code=400, detail=f"Failed to add documents: {type(e).__name__}: {str(e)}")
 
     except Exception as e:
-        print(f"Add documents error: {type(e).__name__}: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        print(f"❌ Add documents error: {type(e).__name__}: {str(e)}")
+        if hasattr(e, 'response') and e.response is not None:
+            print(f"🌐 HTTP Response Status: {e.response.status_code}")
+            print(f"🌐 HTTP Response Body: {e.response.text}")
+        if hasattr(e, '__dict__'):
+            print(f"🔍 Exception details: {e.__dict__}")
+        import traceback
+        print(f"📋 Full traceback:\n{traceback.format_exc()}")
+        raise HTTPException(status_code=400, detail=f"{type(e).__name__}: {str(e)}")
 
 
 @app.post("/api/add-documents/{collection_name}")

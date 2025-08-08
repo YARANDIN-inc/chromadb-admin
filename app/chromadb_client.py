@@ -134,7 +134,12 @@ class ChromaDBClient:
             print(f"Timeout/Connection error in ChromaDB operation for instance '{self.instance.name}': {e}")
             return default_return
         except Exception as e:
-            print(f"Error in ChromaDB operation for instance '{self.instance.name}': {e}")
+            print(f"Error in ChromaDB operation for instance '{self.instance.name}': {type(e).__name__}: {e}")
+            if hasattr(e, 'response') and e.response is not None:
+                print(f"HTTP Response Status: {e.response.status_code}")
+                print(f"HTTP Response Body: {e.response.text}")
+            if hasattr(e, '__dict__'):
+                print(f"Exception details: {e.__dict__}")
             return default_return
         finally:
             # Restore original timeout
@@ -254,27 +259,56 @@ class ChromaDBClient:
                      metadatas: Optional[List[Dict]] = None, ids: Optional[List[str]] = None):
         """Add documents to a collection with timeout (optimized)"""
         def add_op():
-            collection = self.client.get_collection(collection_name, embedding_function=OpenAIEmbeddingFunction(
-                model_name="text-embedding-ada-002"
-            ))
+            print(f"🔄 Starting add_documents operation for collection '{collection_name}' in instance '{self.instance.name}'")
+            print(f"📊 Document details: count={len(documents)}, has_metadatas={metadatas is not None}, has_ids={ids is not None}")
             
-            if ids is None:
-                ids_to_use = [str(uuid.uuid4()) for _ in documents]
-            else:
-                ids_to_use = ids
-            
-            if len(ids_to_use) != len(documents):
-                ids_to_use = [str(uuid.uuid4()) for _ in documents]
-            
-            # Use upsert instead of add for better performance with duplicates
-            collection.upsert(
-                ids=ids_to_use,
-                documents=documents,
-                metadatas=metadatas
-            )
-            
-            print(f"Successfully added {len(documents)} documents to collection '{collection_name}' in instance '{self.instance.name}'")
-            return True
+            try:
+                print(f"🔍 Getting collection '{collection_name}'...")
+                collection = self.client.get_collection(collection_name, embedding_function=OpenAIEmbeddingFunction(
+                    model_name="text-embedding-ada-002"
+                ))
+                print(f"✅ Retrieved collection '{collection_name}' successfully")
+                
+                if ids is None:
+                    ids_to_use = [str(uuid.uuid4()) for _ in documents]
+                    print(f"🆔 Generated {len(ids_to_use)} new UUIDs for documents")
+                else:
+                    ids_to_use = ids
+                    print(f"🆔 Using provided IDs: {len(ids_to_use)} IDs")
+                
+                if len(ids_to_use) != len(documents):
+                    ids_to_use = [str(uuid.uuid4()) for _ in documents]
+                    print(f"⚠️ ID count mismatch, generated {len(ids_to_use)} new UUIDs")
+                
+                # Log first few documents for debugging (truncated)
+                for i, doc in enumerate(documents[:3]):
+                    truncated_doc = doc[:100] + "..." if len(doc) > 100 else doc
+                    print(f"📄 Doc {i+1}: ID={ids_to_use[i][:8]}..., Length={len(doc)}, Content='{truncated_doc}'")
+                
+                if len(documents) > 3:
+                    print(f"📄 ... and {len(documents) - 3} more documents")
+                
+                print(f"🚀 Calling collection.upsert() with {len(documents)} documents...")
+                
+                # Use upsert instead of add for better performance with duplicates
+                collection.upsert(
+                    ids=ids_to_use,
+                    documents=documents,
+                    metadatas=metadatas
+                )
+                
+                print(f"✅ Upsert completed successfully for {len(documents)} documents")
+                print(f"Successfully added {len(documents)} documents to collection '{collection_name}' in instance '{self.instance.name}'")
+                return True
+                
+            except Exception as upsert_error:
+                print(f"❌ Error during upsert operation: {type(upsert_error).__name__}: {upsert_error}")
+                if hasattr(upsert_error, 'response') and upsert_error.response is not None:
+                    print(f"🌐 HTTP Response Status: {upsert_error.response.status_code}")
+                    print(f"🌐 HTTP Response Body: {upsert_error.response.text}")
+                if hasattr(upsert_error, '__dict__'):
+                    print(f"🔍 Exception details: {upsert_error.__dict__}")
+                raise upsert_error
         
         # Optimized timeout calculation based on document count and size
         doc_count = len(documents)
