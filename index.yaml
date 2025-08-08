@@ -15,8 +15,90 @@ entries:
       artifacthub.io/operator: "false"
       artifacthub.io/prerelease: "false"
     apiVersion: v2
+    appVersion: 1.3.0
+    created: "2025-08-08T10:18:40.188475157Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: 7b49fd3135f58ca6d9a7b40c26fc6e3567b50c03fa82dbdfe84584bdafb5d61f
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/chromadb-admin-1.3.0.tgz
+    version: 1.3.0
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
+    appVersion: 1.3.0
+    created: "2025-08-08T10:18:40.206270176Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.7.10
+    description: A Helm chart for ChromaDB Admin Panel - A web-based administration
+      interface for ChromaDB
+    digest: 7b49fd3135f58ca6d9a7b40c26fc6e3567b50c03fa82dbdfe84584bdafb5d61f
+    home: https://github.com/yarandin-inc/chromadb-admin
+    keywords:
+    - chromadb
+    - admin
+    - vector-database
+    - machine-learning
+    - fastapi
+    maintainers:
+    - email: max@yarandin-inc.com
+      name: Max
+    name: chromadb-admin
+    sources:
+    - https://github.com/yarandin-inc/chromadb-admin
+    type: application
+    urls:
+    - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-1.3.0.tgz
+    version: 1.3.0
+  - annotations:
+      artifacthub.io/category: machine-learning
+      artifacthub.io/containsSecurityUpdates: "true"
+      artifacthub.io/images: |
+        - name: chromadb-admin
+          image: ghcr.io/yarandin-inc/chromadb-admin:latest
+        - name: chromadb
+          image: chromadb/chroma:1.0.12
+        - name: postgresql
+          image: postgres:17.5-alpine
+      artifacthub.io/license: MIT
+      artifacthub.io/operator: "false"
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
     appVersion: 1.2.1
-    created: "2025-07-21T13:21:56.085392469Z"
+    created: "2025-08-08T10:18:40.18311155Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -57,7 +139,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 1.2.1
-    created: "2025-07-21T13:21:56.096911135Z"
+    created: "2025-08-08T10:18:40.200192174Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -98,7 +180,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 1.2.0
-    created: "2025-07-21T13:21:56.07962254Z"
+    created: "2025-08-08T10:18:40.177087813Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -139,7 +221,7 @@ entries:
       artifacthub.io/prerelease: "false"
     apiVersion: v2
     appVersion: 1.2.0
-    created: "2025-07-21T13:21:56.091181533Z"
+    created: "2025-08-08T10:18:40.194079717Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -165,4 +247,4 @@ entries:
     urls:
     - https://yarandin-inc.github.io/chromadb-admin/.packaged-charts/chromadb-admin-1.2.0.tgz
     version: 1.2.0
-generated: "2025-07-21T13:21:56.074070382Z"
+generated: "2025-08-08T10:18:40.170820837Z"
